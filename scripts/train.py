@@ -7,7 +7,6 @@ import os
 import sys
 import wandb
 sys.path.append('../src')
-print(sys.path)
 from model import UNet3D
 from metrics import bce_dice_loss, dice_coefficient, batch_dice_coeff
 from dataset import KneeSegDataset
@@ -120,3 +119,5 @@ for epoch in range(num_epochs):
 # Once training is done, save model
 model_path = 'trained_model.pth'
 torch.save(model.state_dict(), model_path)
+
+wandb.finish()
