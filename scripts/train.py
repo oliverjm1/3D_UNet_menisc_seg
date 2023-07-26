@@ -24,8 +24,8 @@ val_paths = np.array([os.path.basename(i).split('.')[0] for i in glob.glob(f'{DA
 # Define the dataset and dataloaders
 train_dataset = KneeSegDataset(train_paths, DATA_DIR)
 val_dataset = KneeSegDataset(val_paths, DATA_DIR, split='valid')
-train_loader = DataLoader(train_dataset, batch_size=1, shuffle=True)
-val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False)
+train_loader = DataLoader(train_dataset, batch_size=4, shuffle=True)
+val_loader = DataLoader(val_dataset, batch_size=4, shuffle=False)
 
 # Create model
 model = UNet3D(1, 1, 16)
