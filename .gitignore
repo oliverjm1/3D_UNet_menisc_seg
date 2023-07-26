@@ -1,0 +1,7 @@
+.DS_Store
+
+# ignore everything inside the data folder
+data/*
+
+# But don't ignore the data folder itself
+#!data/
