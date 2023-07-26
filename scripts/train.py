@@ -4,6 +4,10 @@ from torch.utils.data import DataLoader
 import numpy as np
 import glob
 import os
+import sys
+import wandb
+sys.path.append('../src')
+print(sys.path)
 from model import UNet3D
 from metrics import bce_dice_loss, dice_coefficient, batch_dice_coeff
 from dataset import KneeSegDataset
@@ -20,7 +24,7 @@ val_paths = np.array([os.path.basename(i).split('.')[0] for i in glob.glob(f'{DA
 
 # Define the dataset and dataloaders
 train_dataset = KneeSegDataset(train_paths, DATA_DIR)
-val_dataset = KneeSegDataset(val_paths, DATA_DIR)
+val_dataset = KneeSegDataset(val_paths, DATA_DIR, split='valid')
 train_loader = DataLoader(train_dataset, batch_size=1, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False)
 
@@ -36,6 +40,22 @@ num_epochs = 5
 
 # Threshold for predicted segmentation mask
 threshold = 0.5
+
+# start a new wandb run to track this script - LOG IN ON CONSOLE BEFORE RUNNING
+wandb.init(
+    # set the wandb project where this run will be logged
+    project="train_seg_model",
+    
+    # track hyperparameters and run metadata
+    config={
+    "learning_rate": 0.0001,
+    "architecture": "3D UNet",
+    "kernel_num": 16,
+    "dataset": "IWOAI",
+    "epochs": num_epochs,
+    "threshold": threshold,
+    }
+)
 
 model.to(device)
 
@@ -65,8 +85,6 @@ for epoch in range(num_epochs):
         dice_coeff += batch_dice_coeff(outputs>threshold, targets).detach().cpu().numpy()
         n += 1
 
-        print(f"({idx}) Loss: {loss.item()}, Av Dice Score: {batch_dice_coeff(outputs>threshold, targets)}")
-
     # Get train metrics, averaged over number of images in batch
     train_loss = running_loss/n
     train_dice_av = dice_coeff/n
@@ -91,15 +109,13 @@ for epoch in range(num_epochs):
             dice_coeff += batch_dice_coeff(outputs>threshold, targets).detach().cpu().numpy()
             n += 1
 
-            print(f"({idx}) Loss: {loss.item()}, Dice Score: {batch_dice_coeff(outputs>threshold, targets).detach().cpu().numpy()}")
-
     # Val metrics
     val_loss = running_loss/n
     val_dice_av = dice_coeff/n
-
-    # Print metrics after each epoch
-    print(f"Epoch {epoch+1}, Train Loss: {train_loss}, Train Dice Score: {train_dice_av}, ",
-          "Val Loss: {val_loss}, Val Dice Score: {val_dice_av}")
+    
+    # log to wandb
+    wandb.log({"Train Loss": train_loss, "Train Dice Score": train_dice_av,
+               "Val Loss": val_loss, "Val Dice Score": val_dice_av})
     
 # Once training is done, save model
 model_path = 'trained_model.pth'
