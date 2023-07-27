@@ -11,6 +11,7 @@ sys.path.append('../src')
 from model import UNet3D
 from metrics import bce_dice_loss, dice_coefficient, batch_dice_coeff
 from dataset import KneeSegDataset
+from utils import read_hyperparams
 
 # Set Device
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -28,18 +29,23 @@ val_dataset = KneeSegDataset(val_paths, DATA_DIR, split='valid')
 train_loader = DataLoader(train_dataset, batch_size=4, num_workers = 1, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=2, num_workers = 1, shuffle=False)
 
+# Read in hyperparams from txt file (will keep this in scripts folder)
+# Each line in file in format (e.g. learning_rate=0.001)
+hyperparams = read_hyperparams('hyperparams.txt')
+
 # Create model
 model = UNet3D(1, 1, 16)
 
 # Specify optimiser and criterion
 criterion = bce_dice_loss
-optimizer = optim.Adam(model.parameters(), lr=0.001)
+l_rate = hyperparams[l_rate]
+optimizer = optim.Adam(model.parameters(), lr=l_rate)
 
 # How long to train for?
-num_epochs = 20
+num_epochs = hyperparams[num_epochs]
 
 # Threshold for predicted segmentation mask
-threshold = 0.5
+threshold = hyperparams[threshold]
 
 # start a new wandb run to track this script - LOG IN ON CONSOLE BEFORE RUNNING
 wandb.init(
@@ -48,7 +54,7 @@ wandb.init(
     
     # track hyperparameters and run metadata
     config={
-    "learning_rate": 0.001,
+    "learning_rate": l_rate,
     "architecture": "3D UNet",
     "kernel_num": 16,
     "dataset": "IWOAI",
@@ -120,7 +126,7 @@ for epoch in range(num_epochs):
                "Val Loss": val_loss, "Val Dice Score": val_dice_av})
     
 # Once training is done, save model
-model_path = 'trained_model.pth'
+model_path = f'{hyperparams[run_name]}.pth'
 torch.save(model.state_dict(), model_path)
 
 wandb.finish()

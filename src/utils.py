@@ -20,3 +20,19 @@ def crop_im(image):
     cropped = image[dim1_lower:dim1_upper, dim2_lower:dim2_upper, :]
 
     return cropped
+
+# Function that reads in txt file with each line in format x=y
+# and converts to hyperparam dictionary
+def read_hyperparams(path):
+    hyperparams = {}
+    with open(path, 'r') as file:
+        for line in file:
+            key, value = line.strip().split('=')
+            # Convert to float if possible, else leave as string
+            try:
+                value = float(value)
+            except ValueError:
+                pass
+            hyperparams[key] = value
+
+    return hyperparams
