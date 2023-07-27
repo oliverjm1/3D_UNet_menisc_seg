@@ -24,18 +24,18 @@ val_paths = np.array([os.path.basename(i).split('.')[0] for i in glob.glob(f'{DA
 # Define the dataset and dataloaders
 train_dataset = KneeSegDataset(train_paths, DATA_DIR)
 val_dataset = KneeSegDataset(val_paths, DATA_DIR, split='valid')
-train_loader = DataLoader(train_dataset, batch_size=4, shuffle=True)
-val_loader = DataLoader(val_dataset, batch_size=4, shuffle=False)
+train_loader = DataLoader(train_dataset, batch_size=4, num_workers = 1, shuffle=True)
+val_loader = DataLoader(val_dataset, batch_size=2, num_workers = 1, shuffle=False)
 
 # Create model
 model = UNet3D(1, 1, 16)
 
 # Specify optimiser and criterion
 criterion = bce_dice_loss
-optimizer = optim.Adam(model.parameters(), lr=0.0001)
+optimizer = optim.Adam(model.parameters(), lr=0.001)
 
 # How long to train for?
-num_epochs = 5
+num_epochs = 20
 
 # Threshold for predicted segmentation mask
 threshold = 0.5
@@ -47,7 +47,7 @@ wandb.init(
     
     # track hyperparameters and run metadata
     config={
-    "learning_rate": 0.0001,
+    "learning_rate": 0.001,
     "architecture": "3D UNet",
     "kernel_num": 16,
     "dataset": "IWOAI",
@@ -57,6 +57,8 @@ wandb.init(
 )
 
 model.to(device)
+if torch.cuda.device_count() > 1:
+    model = nn.DataParallel(model)
 
 # Train Loop
 for epoch in range(num_epochs):
