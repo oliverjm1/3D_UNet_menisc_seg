@@ -16,6 +16,10 @@ from utils import read_hyperparams
 # Set Device
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+# Read in hyperparams from txt file (will keep this in scripts folder)
+# Each line in file in format (e.g. learning_rate=0.001)
+hyperparams = read_hyperparams('hyperparams.txt')
+
 # Define data path
 DATA_DIR = '../data'
 
@@ -26,26 +30,22 @@ val_paths = np.array([os.path.basename(i).split('.')[0] for i in glob.glob(f'{DA
 # Define the dataset and dataloaders
 train_dataset = KneeSegDataset(train_paths, DATA_DIR)
 val_dataset = KneeSegDataset(val_paths, DATA_DIR, split='valid')
-train_loader = DataLoader(train_dataset, batch_size=4, num_workers = 1, shuffle=True)
+train_loader = DataLoader(train_dataset, batch_size=hyperparams['batch_size'], num_workers = 1, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=2, num_workers = 1, shuffle=False)
-
-# Read in hyperparams from txt file (will keep this in scripts folder)
-# Each line in file in format (e.g. learning_rate=0.001)
-hyperparams = read_hyperparams('hyperparams.txt')
 
 # Create model
 model = UNet3D(1, 1, 16)
 
 # Specify optimiser and criterion
 criterion = bce_dice_loss
-l_rate = hyperparams[l_rate]
+l_rate = hyperparams['l_rate']
 optimizer = optim.Adam(model.parameters(), lr=l_rate)
 
 # How long to train for?
-num_epochs = hyperparams[num_epochs]
+num_epochs = hyperparams['num_epochs']
 
 # Threshold for predicted segmentation mask
-threshold = hyperparams[threshold]
+threshold = hyperparams['threshold']
 
 # start a new wandb run to track this script - LOG IN ON CONSOLE BEFORE RUNNING
 wandb.init(
@@ -64,6 +64,8 @@ wandb.init(
 )
 
 model.to(device)
+
+# use multiple gpu in parallel if available
 if torch.cuda.device_count() > 1:
     model = nn.DataParallel(model)
 
@@ -126,7 +128,7 @@ for epoch in range(num_epochs):
                "Val Loss": val_loss, "Val Dice Score": val_dice_av})
     
 # Once training is done, save model
-model_path = f'{hyperparams[run_name]}.pth'
+model_path = f"{hyperparams['run_name']}.pth"
 torch.save(model.state_dict(), model_path)
 
 wandb.finish()
