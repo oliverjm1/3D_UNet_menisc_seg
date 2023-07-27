@@ -19,6 +19,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 # Read in hyperparams from txt file (will keep this in scripts folder)
 # Each line in file in format (e.g. learning_rate=0.001)
 hyperparams = read_hyperparams('hyperparams.txt')
+print(hyperparams)
 
 # Define data path
 DATA_DIR = '../data'
@@ -30,7 +31,7 @@ val_paths = np.array([os.path.basename(i).split('.')[0] for i in glob.glob(f'{DA
 # Define the dataset and dataloaders
 train_dataset = KneeSegDataset(train_paths, DATA_DIR)
 val_dataset = KneeSegDataset(val_paths, DATA_DIR, split='valid')
-train_loader = DataLoader(train_dataset, batch_size=hyperparams['batch_size'], num_workers = 1, shuffle=True)
+train_loader = DataLoader(train_dataset, batch_size=int(hyperparams['batch_size']), num_workers = 1, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=2, num_workers = 1, shuffle=False)
 
 # Create model
@@ -42,7 +43,7 @@ l_rate = hyperparams['l_rate']
 optimizer = optim.Adam(model.parameters(), lr=l_rate)
 
 # How long to train for?
-num_epochs = hyperparams['num_epochs']
+num_epochs = int(hyperparams['num_epochs'])
 
 # Threshold for predicted segmentation mask
 threshold = hyperparams['threshold']
