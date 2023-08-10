@@ -5,3 +5,6 @@ data/*
 
 # But don't ignore the data folder itself, or md file to give info
 !data/data.md
+
+# ignore model saves
+scripts/*.pth
