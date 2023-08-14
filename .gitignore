@@ -9,3 +9,8 @@ data/*
 # ignore model saves and cloud files
 scripts/*.pth
 scripts/*.icloud
+
+# ignore wandb folder generated, and any saved masks, and my colab test notebook
+scripts/wandb/
+scripts/*.npy
+scripts/*.ipynb
