@@ -68,7 +68,7 @@ class KneeSegDataset2DSAM(Dataset):
     def __getitem__(self, index):
         path_and_slice_num = self.slice_paths[index]
         path = path_and_slice_num[0]
-        slice_num = path_and_slice_num[1]
+        slice_num = int(path_and_slice_num[1])
 
         # get full paths and read in whole image
         im_path = os.path.join(self.data_dir, self.split, path + '.im')
