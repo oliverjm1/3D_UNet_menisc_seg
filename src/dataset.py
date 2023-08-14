@@ -63,10 +63,10 @@ class KneeSegDataset2DSAM(Dataset):
         self.split = split
 
     def __len__(self):
-        return len(self.file_paths)
+        return len(self.slice_paths)
 
     def __getitem__(self, index):
-        path_and_slice_num = self.file_paths[index]
+        path_and_slice_num = self.slice_paths[index]
         path = path_and_slice_num[0]
         slice_num = path_and_slice_num[1]
 
