@@ -101,22 +101,22 @@ class KneeSegDataset2DSAM(Dataset):
 
         # ------ SAM STUFF ------
         # Get one slice using the index
-        im_slice = image[slice_num]
-        mask_slice = mask[slice_num]
+        im_slice = image[...,slice_num]
+        mask_slice = mask[...,slice_num]
 
         # Resizing, expanding channels, and padding to rgb 1024x1024
         # Make longest size 1024
         make_big = ResizeLongestSide(1024)
         target_size = make_big.get_preprocess_shape(
-            im_slice.shape[0], im_slice.shape[1], make_big.target_length
+            im_slice.shape[1], im_slice.shape[2], make_big.target_length
         )
-        big_slice = resize(im_slice.unsqueeze(0), target_size)
+        big_slice = resize(im_slice, target_size)
 
         # Expand to 3 channels for RBG input
         expand_dims = transforms.Lambda(lambda x: x.expand(3, -1, -1)) 
         rgb_slice = expand_dims(big_slice)
         
         # Pad to 1024x1024 square
-        image = pad_to_square(rgb_slice, 1024)
+        input_slice = pad_to_square(rgb_slice, 1024)
 
-        return image, mask
+        return input_slice, mask_slice
