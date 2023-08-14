@@ -1,4 +1,5 @@
 import numpy as np
+from torch.nn import functional as F
 
 # Function to take MRI image, clip the pixel values to specified upper
 # bound, and normalise between zero and this bound.
@@ -20,6 +21,14 @@ def crop_im(image):
     cropped = image[dim1_lower:dim1_upper, dim2_lower:dim2_upper, :]
 
     return cropped
+
+# This function will pad an image upto a square of a give size
+def pad_to_square(x, size):
+        h, w = x.shape[-2:]
+        padh = size - h
+        padw = size - w
+        x = F.pad(x, (0, padw, 0, padh))
+        return x
 
 # Function that reads in txt file with each line in format x=y
 # and converts to hyperparam dictionary
