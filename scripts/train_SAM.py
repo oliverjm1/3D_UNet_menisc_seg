@@ -20,7 +20,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # Read in hyperparams from txt file (will keep this in scripts folder)
 # Each line in file in format (e.g. learning_rate=0.001)
-hyperparams = read_hyperparams('hyperparams.txt')
+hyperparams = read_hyperparams('hyperparams_sam.txt')
 print(hyperparams)
 
 # Define data path
@@ -55,6 +55,7 @@ model = my_SAM(
     prompt_encoder=copy.deepcopy(sam.prompt_encoder),
     mask_decoder=copy.deepcopy(sam.mask_decoder),
 )
+model.eval()
 
 # Specify optimiser
 # Only use trainable parameters in optimiser
