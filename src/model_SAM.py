@@ -10,26 +10,34 @@ class my_SAM(nn.Module):
         image_encoder,
         prompt_encoder,
         mask_decoder,
+        freeze_encoder=True
     ):
         super().__init__()
         self.image_encoder = image_encoder
         self.prompt_encoder = prompt_encoder
         self.mask_decoder = mask_decoder
+        self.freeze_encoder = freeze_encoder
         self.sigmoid = nn.Sigmoid()
 
-        # freeze both the image encoder (for now) and prompt encoder
-        for param in self.image_encoder.parameters():
-            param.requires_grad = False
+        # freeze prompt encoder
         for param in self.prompt_encoder.parameters():
             param.requires_grad = False
+        
+        # freeze image encoder depending on argument
+        if self.freeze_encoder:
+            for param in self.image_encoder.parameters():
+                param.requires_grad = False
 
     def forward(self, image):
 
-        # First get the image and prompt embeddings with no_grad
-        # (only training decoder at the mo)
-        with torch.no_grad():
+        # First get the image embeddings, frozen or not
+        if self.freeze_encoder:
+            with torch.no_grad():
+                image_embedding = self.image_encoder(image)
+        else:
             image_embedding = self.image_encoder(image)
-
+        
+        with torch.no_grad():
             # no prompts used here, but getting empty embeddings so
             # that the mask decoder doesn't have to be altered
             sparse_embeddings, dense_embeddings = self.prompt_encoder(
