@@ -45,3 +45,15 @@ def read_hyperparams(path):
             hyperparams[key] = value
 
     return hyperparams
+
+# Function that takes in an array of 3d image paths and the num of slices
+# in each image, returning array of (path, slice_index) to access each slice.
+def path_arr_to_slice_arr(path_array, num_of_slices):
+    path_slice_array = []
+
+    for path in path_array:
+        for i in range(num_of_slices):
+            path_slice_array.append((path, i))
+
+    path_slice_array = np.array(path_slice_array)
+    return path_slice_array

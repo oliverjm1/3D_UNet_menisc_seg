@@ -5,13 +5,15 @@ from torch.utils.data import DataLoader
 import numpy as np
 import glob
 import os
+import copy
 import sys
 import wandb
+from segment_anything import sam_model_registry
 sys.path.append('../src')
-from model import UNet3D
-from metrics import bce_dice_loss, dice_coefficient, batch_dice_coeff
-from dataset import KneeSegDataset
-from utils import read_hyperparams
+from model_SAM import my_SAM
+from metrics import dice_loss, dice_coefficient, batch_dice_coeff
+from datasets import KneeSegDataset2DSAM
+from utils import read_hyperparams, path_arr_to_slice_arr
 
 # Set Device
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -28,19 +30,40 @@ DATA_DIR = '../data'
 train_paths = np.array([os.path.basename(i).split('.')[0] for i in glob.glob(f'{DATA_DIR}/train/*.im')])
 val_paths = np.array([os.path.basename(i).split('.')[0] for i in glob.glob(f'{DATA_DIR}/valid/*.im')])
 
+# Use function in utils to form train/val arrays of info needed to access a specific image slice
+# Each element in the new array with contain the path to an image, along with the slice index [[path, index],...]
+num_of_slices = 160
+
+train_slice_array = path_arr_to_slice_arr(train_paths, num_of_slices)
+val_slice_array = path_arr_to_slice_arr(val_paths, num_of_slices)
+
 # Define the dataset and dataloaders
-train_dataset = KneeSegDataset(train_paths, DATA_DIR)
-val_dataset = KneeSegDataset(val_paths, DATA_DIR, split='valid')
+train_dataset = KneeSegDataset2DSAM(train_slice_array, DATA_DIR)
+val_dataset = KneeSegDataset2DSAM(val_slice_array, DATA_DIR, split='valid')
 train_loader = DataLoader(train_dataset, batch_size=int(hyperparams['batch_size']), num_workers = 1, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=2, num_workers = 1, shuffle=False)
 
-# Create model
-model = UNet3D(1, 1, 16)
+# Load in SAM with pretrained weights
+sam_checkpoint = "../models/sam_vit_b_01ec64.pth"
+model_type = "vit_b"
 
-# Specify optimiser and criterion
-criterion = bce_dice_loss
+sam = sam_model_registry[model_type](checkpoint=sam_checkpoint)
+
+# Create model, initialising with pretrained SAM parts
+model = my_SAM(
+    image_encoder=copy.deepcopy(sam.image_encoder),
+    prompt_encoder=copy.deepcopy(sam.prompt_encoder),
+    mask_decoder=copy.deepcopy(sam.mask_decoder),
+)
+
+# Specify optimiser
+# Only use trainable parameters in optimiser
 l_rate = hyperparams['l_rate']
-optimizer = optim.Adam(model.parameters(), lr=l_rate)
+trainable_params = [param for param in model.parameters() if param.requires_grad]
+optimizer = optim.Adam(trainable_params, lr=l_rate)
+
+# define bce loss. Will call this and dice loss in train loop, unweighted
+loss_bce = nn.BCELoss()
 
 # How long to train for?
 num_epochs = int(hyperparams['num_epochs'])
@@ -51,13 +74,13 @@ threshold = hyperparams['threshold']
 # start a new wandb run to track this script - LOG IN ON CONSOLE BEFORE RUNNING
 wandb.init(
     # set the wandb project where this run will be logged
-    project="train_seg_model",
+    project="train_SAM_model",
     
     # track hyperparameters and run metadata
     config={
     "learning_rate": l_rate,
-    "architecture": "3D UNet",
-    "kernel_num": 16,
+    "architecture": "2D SAM",
+    "unfrozen?": "Decoder",
     "dataset": "IWOAI",
     "epochs": num_epochs,
     "threshold": threshold,
@@ -86,9 +109,13 @@ for epoch in range(num_epochs):
 
         optimizer.zero_grad()
 
-        # Forward, backward, and update params
+        # Forward
         outputs = model(inputs)
-        loss = criterion(outputs, targets)
+        bce = loss_bce(outputs, targets) #binary cross-entropy
+        dice = dice_loss(outputs, targets) #dice
+        loss = bce + dice #unweighted combination of the two
+
+        # Backward, and update params
         loss.backward()
         optimizer.step()
 
@@ -114,7 +141,9 @@ for epoch in range(num_epochs):
             targets = targets.to(device)
 
             outputs = model(inputs)
-            loss = criterion(outputs, targets)
+            bce = loss_bce(outputs, targets)
+            dice = dice_loss(outputs, targets)
+            loss = bce + dice
 
             running_loss += loss.detach().cpu().numpy()
             dice_coeff += batch_dice_coeff(outputs>threshold, targets).detach().cpu().numpy()
