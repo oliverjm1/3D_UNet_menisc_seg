@@ -18,7 +18,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # Read in hyperparams from txt file (will keep this in scripts folder)
 # Each line in file in format (e.g. learning_rate=0.001)
-hyperparams = read_hyperparams('hyperparams.txt')
+hyperparams = read_hyperparams('hyperparams_unet.txt')
 print(hyperparams)
 
 # Define data path
