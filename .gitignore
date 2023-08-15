@@ -6,11 +6,7 @@ data/*
 # But don't ignore the data folder itself, or md file to give info
 !data/data.md
 
-# ignore model saves and cloud files
-scripts/*.pth
-scripts/*.icloud
-
-# ignore wandb folder generated, and any saved masks, and my colab test notebook
-scripts/wandb/
-scripts/*.npy
-scripts/*.ipynb
+# ignore everything inside the scripts folder except for .py and .txt files
+scripts/*
+!scripts/*.py
+!scripts/*.txt
