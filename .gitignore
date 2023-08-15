@@ -10,3 +10,6 @@ data/*
 scripts/*
 !scripts/*.py
 !scripts/*.txt
+
+# ignore pycache folder
+src/__pycache__/
