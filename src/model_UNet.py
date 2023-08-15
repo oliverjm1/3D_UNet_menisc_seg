@@ -1,3 +1,8 @@
+"""
+Define my 3D U-Net model structure.
+It is formed of an encoder, bottleneck, and decoder.
+"""
+
 import torch
 import torch.nn as nn
 

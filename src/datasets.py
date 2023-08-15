@@ -67,6 +67,8 @@ class KneeSegDataset2DSAM(Dataset):
 
     def __getitem__(self, index):
         path_and_slice_num = self.slice_paths[index]
+
+        # extract the path and slice index from the array element
         path = path_and_slice_num[0]
         slice_num = int(path_and_slice_num[1])
 
