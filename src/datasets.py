@@ -112,7 +112,7 @@ class KneeSegDataset2DSAM(Dataset):
         target_size = make_big.get_preprocess_shape(
             im_slice.shape[1], im_slice.shape[2], make_big.target_length
         )
-        big_slice = resize(im_slice, target_size)
+        big_slice = resize(im_slice, target_size, antialias=True)
 
         # Expand to 3 channels for RBG input
         expand_dims = transforms.Lambda(lambda x: x.expand(3, -1, -1)) 
@@ -122,3 +122,47 @@ class KneeSegDataset2DSAM(Dataset):
         input_slice = pad_to_square(rgb_slice, 1024)
 
         return input_slice, mask_slice
+
+
+# Dataset that opens image slice file, prepares for SAM input, and returns image and mask
+class KneeSegDataset2DSlicesSAM(Dataset):
+    def __init__(self, paths, data_dir, split='train'):
+        self.paths = paths
+        self.split = split
+
+        # set image and mask dir based on the split
+        self.im_dir = f"{self.split}_slice_ims"
+        self.mask_dir = f"{self.split}_slice_gts"
+
+    def __len__(self):
+        return len(self.paths)
+
+    def __getitem__(self, index):
+        path = self.paths[index]
+
+        # load slice and mask
+        image = np.load(self.im_dir + path)
+        mask = np.load(self.mask_dir + path)
+
+        # turn to torch, add channel dimension
+        image = torch.from_numpy(image).float().unsqueeze(0)
+        mask = torch.from_numpy(mask).float().unsqueeze(0)
+
+        # ------ SAM STUFF ------
+
+        # Resizing, expanding channels, and padding to rgb 1024x1024
+        # Make longest size 1024
+        make_big = ResizeLongestSide(1024)
+        target_size = make_big.get_preprocess_shape(
+            image.shape[1], image.shape[2], make_big.target_length
+        )
+        big = resize(image, target_size, antialias=True)
+
+        # Expand to 3 channels for RBG input
+        expand_dims = transforms.Lambda(lambda x: x.expand(3, -1, -1)) 
+        rgb = expand_dims(big)
+        
+        # Pad to 1024x1024 square
+        input = pad_to_square(rgb, 1024)
+
+        return input, mask
