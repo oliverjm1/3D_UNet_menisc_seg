@@ -141,8 +141,8 @@ class KneeSegDataset2DSlicesSAM(Dataset):
         path = self.paths[index]
 
         # load slice and mask
-        im_path = os.path.join(self.im_dir, self.split, path)
-        mask_path = os.path.join(self.mask_dir, self.split, path)
+        im_path = os.path.join(self.im_dir, path)
+        mask_path = os.path.join(self.mask_dir, path)
         image = np.load(im_path)
         mask = np.load(mask_path)
 
