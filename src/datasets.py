@@ -141,8 +141,10 @@ class KneeSegDataset2DSlicesSAM(Dataset):
         path = self.paths[index]
 
         # load slice and mask
-        image = np.load(self.im_dir + path)
-        mask = np.load(self.mask_dir + path)
+        im_path = os.path.join(self.im_dir, self.split, path)
+        mask_path = os.path.join(self.mask_dir, self.split, path)
+        image = np.load(im_path)
+        mask = np.load(mask_path)
 
         # turn to torch, add channel dimension
         image = torch.from_numpy(image).float().unsqueeze(0)
