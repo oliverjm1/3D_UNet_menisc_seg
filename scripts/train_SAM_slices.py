@@ -39,6 +39,10 @@ val_dataset = KneeSegDataset2DSlicesSAM(val_paths, DATA_DIR, split='valid')
 train_loader = DataLoader(train_dataset, batch_size=int(hyperparams['batch_size']), num_workers = 1, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=4, num_workers = 1, shuffle=False)
 
+print('test getting an item')
+image, mask = train_dataset.__getitem__(0)
+print('image, mask', image, mask)
+
 # Load in SAM with pretrained weights
 sam_checkpoint = "../models/sam_vit_b_01ec64.pth"
 model_type = "vit_b"
