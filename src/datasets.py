@@ -155,17 +155,18 @@ class KneeSegDataset2DSlicesSAM(Dataset):
 
         # Resizing, expanding channels, and padding to rgb 1024x1024
         # Make longest size 1024
-        make_big = ResizeLongestSide(1024)
-        target_size = make_big.get_preprocess_shape(
-            image.shape[1], image.shape[2], make_big.target_length
-        )
-        big = resize(image, target_size, antialias=True)
+        #make_big = ResizeLongestSide(1024)
+        #target_size = make_big.get_preprocess_shape(
+        #    image.shape[1], image.shape[2], make_big.target_length
+        #)
+        #big = resize(image, target_size, antialias=True)
 
         # Expand to 3 channels for RBG input
-        expand_dims = transforms.Lambda(lambda x: x.expand(3, -1, -1)) 
-        rgb = expand_dims(big)
+        #expand_dims = transforms.Lambda(lambda x: x.expand(3, -1, -1)) 
+        #rgb = expand_dims(big)
         
         # Pad to 1024x1024 square
-        input = pad_to_square(rgb, 1024)
-
-        return input, mask
+        #input = pad_to_square(rgb, 1024)
+        print("image: ",image.shape)
+        print("mask: ",mask.shape)
+        return image, mask
