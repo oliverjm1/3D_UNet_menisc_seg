@@ -15,8 +15,11 @@ from metrics import dice_loss, dice_coefficient, batch_dice_coeff
 from datasets import KneeSegDataset2DSlicesSAM
 from utils import read_hyperparams
 
+print('here')
+
 # Set Device
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+print('device', device)
 
 # Read in hyperparams from txt file (will keep this in scripts folder)
 # Each line in file in format (e.g. learning_rate=0.001)
