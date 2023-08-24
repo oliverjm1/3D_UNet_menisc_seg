@@ -157,19 +157,21 @@ class KneeSegDataset2DSlicesSAM(Dataset):
         # Make longest size 1024
         make_big = ResizeLongestSide(1024)
         print("1")
+        print("sidelengths ",image.shape[1], image.shape[2])
         target_size = make_big.get_preprocess_shape(
             image.shape[1], image.shape[2], make_big.target_length
         )
         print("2")
         big = resize(image, target_size, antialias=True)
-        print("resized")
+        print("resized", big.shape)
 
         # Expand to 3 channels for RBG input
-        #expand_dims = transforms.Lambda(lambda x: x.expand(3, -1, -1)) 
-        #rgb = expand_dims(big)
+        expand_dims = transforms.Lambda(lambda x: x.expand(3, -1, -1)) 
+        print('4')
+        rgb = expand_dims(big)
         
         # Pad to 1024x1024 square
         #input = pad_to_square(rgb, 1024)
-        print("image: ",image.shape)
+        print("image: ",rgb.shape)
         print("mask: ",mask.shape)
         return image, mask
