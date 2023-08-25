@@ -40,7 +40,10 @@ train_loader = DataLoader(train_dataset, batch_size=int(hyperparams['batch_size'
 val_loader = DataLoader(val_dataset, batch_size=4, num_workers = 1, shuffle=False)
 
 print('test getting an item')
-image, mask = train_dataset.__getitem__(0)
+for i in range(len(train_dataset)):
+    image, mask = train_dataset.__getitem__(i)
+    print(image.shape)
+    print(mask.shape)
 print('image, mask', image, mask)
 
 print('trying dataloader')
