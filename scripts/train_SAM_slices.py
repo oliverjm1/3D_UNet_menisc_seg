@@ -96,7 +96,7 @@ if torch.cuda.device_count() > 1:
 
 # Train Loop
 for epoch in range(num_epochs):
-
+    print('trains')
     # train mode
     model.train()
     running_loss = 0.0
