@@ -36,12 +36,16 @@ val_paths = np.array([os.path.basename(i) for i in glob.glob(f'{DATA_DIR}/valid_
 # Define the dataset and dataloaders
 train_dataset = KneeSegDataset2DSlicesSAM(train_paths, DATA_DIR)
 val_dataset = KneeSegDataset2DSlicesSAM(val_paths, DATA_DIR, split='valid')
-train_loader = DataLoader(train_dataset, batch_size=int(hyperparams['batch_size']), num_workers = 1, shuffle=True)
+train_loader = DataLoader(train_dataset, batch_size=int(hyperparams['batch_size']), num_workers = 1, shuffle=True, pin_memory=True)
 val_loader = DataLoader(val_dataset, batch_size=4, num_workers = 1, shuffle=False)
 
 print('test getting an item')
 image, mask = train_dataset.__getitem__(0)
 print('image, mask', image, mask)
+
+print('trying dataloader')
+image2, mask2 = next(iter(train_loader))
+print("image2, mask2", image2, mask2)
 
 # Load in SAM with pretrained weights
 sam_checkpoint = "../models/sam_vit_b_01ec64.pth"
