@@ -97,9 +97,9 @@ def main():
 
     model.to(device)
 
-    # use multiple gpu in parallel if available
-    if torch.cuda.device_count() > 1:
-        model = nn.DataParallel(model)
+    # # use multiple gpu in parallel if available
+    # if torch.cuda.device_count() > 1:
+    #     model = nn.DataParallel(model)
 
     # Train Loop
     for epoch in range(num_epochs):
@@ -173,6 +173,7 @@ def main():
     torch.save(model.state_dict(), model_path)
 
     wandb.finish()
+
 
 if __name__ == '__main__':
     main()
