@@ -53,6 +53,7 @@ def main():
     print("image2, mask2", image2, mask2)
 
     print('trying dataloader iterate')
+    sys.stdout.flush()
     for image2, mask2 in val_loader:
         pass
     print('complege iterate')
