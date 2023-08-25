@@ -170,8 +170,10 @@ class KneeSegDataset2DSlicesSAM(Dataset):
         print('4')
         rgb = expand_dims(big)
         
+        print('rbg')
         # Pad to 1024x1024 square
-        #input = pad_to_square(rgb, 1024)
+        input = pad_to_square(rgb, 1024)
+        print('padded')
         print("image: ",rgb.shape)
         print("mask: ",mask.shape)
-        return image, mask
+        return input, mask
