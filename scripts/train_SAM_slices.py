@@ -18,14 +18,14 @@ from utils import read_hyperparams
 def main():
     print('here')
 
-    # # Set Device
-    # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    # print('device', device)
+    # Set Device
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    print('device', device)
 
-    # # Read in hyperparams from txt file (will keep this in scripts folder)
-    # # Each line in file in format (e.g. learning_rate=0.001)
-    # hyperparams = read_hyperparams('hyperparams_sam.txt')
-    # print(hyperparams)
+    # Read in hyperparams from txt file (will keep this in scripts folder)
+    # Each line in file in format (e.g. learning_rate=0.001)
+    hyperparams = read_hyperparams('hyperparams_sam.txt')
+    print(hyperparams)
 
     # # Define data path
     # DATA_DIR = '../data'
