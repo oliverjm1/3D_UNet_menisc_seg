@@ -176,4 +176,5 @@ def main():
 
 
 if __name__ == '__main__':
+    print('gonna do the main file')
     main()
