@@ -27,18 +27,20 @@ def main():
     hyperparams = read_hyperparams('hyperparams_sam.txt')
     print(hyperparams)
 
-    # # Define data path
-    # DATA_DIR = '../data'
+    # Define data path
+    DATA_DIR = '../data'
 
-    # # Get the paths
-    # train_paths = np.array([os.path.basename(i) for i in glob.glob(f'{DATA_DIR}/train_slice_ims/*')])
-    # val_paths = np.array([os.path.basename(i) for i in glob.glob(f'{DATA_DIR}/valid_slice_ims/*')])
+    # Get the paths
+    train_paths = np.array([os.path.basename(i) for i in glob.glob(f'{DATA_DIR}/train_slice_ims/*')])
+    val_paths = np.array([os.path.basename(i) for i in glob.glob(f'{DATA_DIR}/valid_slice_ims/*')])
 
-    # # Define the dataset and dataloaders
-    # train_dataset = KneeSegDataset2DSlicesSAM(train_paths, DATA_DIR)
-    # val_dataset = KneeSegDataset2DSlicesSAM(val_paths, DATA_DIR, split='valid')
-    # train_loader = DataLoader(train_dataset, batch_size=int(hyperparams['batch_size']), num_workers = 0, shuffle=True)
-    # val_loader = DataLoader(val_dataset, batch_size=1, num_workers = 0, shuffle=False)
+    # Define the dataset and dataloaders
+    train_dataset = KneeSegDataset2DSlicesSAM(train_paths, DATA_DIR)
+    val_dataset = KneeSegDataset2DSlicesSAM(val_paths, DATA_DIR, split='valid')
+    train_loader = DataLoader(train_dataset, batch_size=int(hyperparams['batch_size']), num_workers = 0, shuffle=True)
+    val_loader = DataLoader(val_dataset, batch_size=1, num_workers = 0, shuffle=False)
+
+    print('dataloaders defined')
 
     # print('test getting an item')
     # image, mask = val_dataset.__getitem__(0)
