@@ -52,6 +52,10 @@ def main():
     image2, mask2 = next(iter(val_loader))
     print("image2, mask2", image2, mask2)
 
+    print('trying dataloader iterate')
+    for idx, (image2, mask2) in enumerate(val_loader):
+        print("load ",idx)
+
     # # Load in SAM with pretrained weights
     # sam_checkpoint = "../models/sam_vit_b_01ec64.pth"
     # model_type = "vit_b"
