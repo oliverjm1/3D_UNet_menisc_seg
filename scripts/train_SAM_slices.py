@@ -105,7 +105,7 @@ def main():
     # # use multiple gpu in parallel if available
     # if torch.cuda.device_count() > 1:
     #     model = nn.DataParallel(model)
-
+    e_count = 0
     # Train Loop
     for epoch in range(num_epochs):
         print('trains')
@@ -138,6 +138,11 @@ def main():
             running_loss += loss.detach().cpu().numpy()
             dice_coeff += batch_dice_coeff(outputs>threshold, targets).detach().cpu().numpy()
             n += 1
+
+            # print out occassional metrics
+            if n%50 == 0:
+                print(f"{n} item bce: {bce}, dice: {dice}, total: {loss}, dice score: {batch_dice_coeff(outputs>threshold, targets).detach().cpu().numpy()}")
+                print(f"{n} cumulative loss: {running_loss/n}, dice: {dice_coeff/n}")
 
         # Get train metrics, averaged over number of images in batch
         train_loss = running_loss/n
@@ -172,6 +177,12 @@ def main():
         # log to wandb
         wandb.log({"Train Loss": train_loss, "Train Dice Score": train_dice_av,
                 "Val Loss": val_loss, "Val Dice Score": val_dice_av})
+
+        # save at epoch end
+        model_path = f"{hyperparams['run_name']}_e{e_count}.pth"
+        torch.save(model.state_dict(), model_path)
+
+        e_count += 1
         
     # Once training is done, save model
     model_path = f"{hyperparams['run_name']}.pth"
