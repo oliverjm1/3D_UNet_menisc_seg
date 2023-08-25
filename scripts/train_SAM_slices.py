@@ -39,12 +39,12 @@ val_dataset = KneeSegDataset2DSlicesSAM(val_paths, DATA_DIR, split='valid')
 train_loader = DataLoader(train_dataset, batch_size=int(hyperparams['batch_size']), num_workers = 1, shuffle=True, pin_memory=True)
 val_loader = DataLoader(val_dataset, batch_size=4, num_workers = 1, shuffle=False)
 
-print('test getting an item')
-for i in range(len(train_dataset)):
-    image, mask = train_dataset.__getitem__(i)
-    print(image.shape)
-    print(mask.shape)
-print('image, mask', image, mask)
+# print('test getting an item')
+# for i in range(len(train_dataset)):
+#     image, mask = train_dataset.__getitem__(i)
+#     print(image.shape)
+#     print(mask.shape)
+# print('image, mask', image, mask)
 
 print('trying dataloader')
 image2, mask2 = next(iter(train_loader))
@@ -100,6 +100,9 @@ model.to(device)
 # use multiple gpu in parallel if available
 if torch.cuda.device_count() > 1:
     model = nn.DataParallel(model)
+
+print('Number of tracked parameters')
+print(len(optimizer.params))
 
 # Train Loop
 for epoch in range(num_epochs):
