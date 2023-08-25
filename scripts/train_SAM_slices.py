@@ -37,8 +37,8 @@ def main():
     # Define the dataset and dataloaders
     train_dataset = KneeSegDataset2DSlicesSAM(train_paths, DATA_DIR)
     val_dataset = KneeSegDataset2DSlicesSAM(val_paths, DATA_DIR, split='valid')
-    train_loader = DataLoader(train_dataset, batch_size=int(hyperparams['batch_size']), num_workers = 0, shuffle=True, pin_memory=True)
-    val_loader = DataLoader(val_dataset, batch_size=1, num_workers = 0, shuffle=False, pin_memory=True)
+    train_loader = DataLoader(train_dataset, batch_size=int(hyperparams['batch_size']), num_workers = 1, shuffle=True, pin_memory=True)
+    val_loader = DataLoader(val_dataset, batch_size=1, num_workers = 1, shuffle=False, pin_memory=True)
 
     print('dataloaders defined')
 
@@ -54,7 +54,9 @@ def main():
 
     print('trying dataloader iterate')
     for image2, mask2 in val_loader:
-        print("load ")
+        pass
+    print('complege iterate')
+    
 
     # # Load in SAM with pretrained weights
     # sam_checkpoint = "../models/sam_vit_b_01ec64.pth"
