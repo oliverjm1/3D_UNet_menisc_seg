@@ -118,6 +118,7 @@ def main():
         # Loop through train loader
         for inputs, targets in train_loader:
             print("in loader", n)
+            sys.stdout.flush()
 
             inputs = inputs.to(device)
             targets = targets.to(device)
