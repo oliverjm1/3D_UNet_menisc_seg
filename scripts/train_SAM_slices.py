@@ -52,136 +52,131 @@ def main():
     image2, mask2 = next(iter(val_loader))
     print("image2, mask2", image2, mask2)
 
-    print('trying dataloader iterate')
     sys.stdout.flush()
-    for image2, mask2 in val_loader:
-        pass
-    print('complege iterate')
     
 
-    # # Load in SAM with pretrained weights
-    # sam_checkpoint = "../models/sam_vit_b_01ec64.pth"
-    # model_type = "vit_b"
+    # Load in SAM with pretrained weights
+    sam_checkpoint = "../models/sam_vit_b_01ec64.pth"
+    model_type = "vit_b"
 
-    # sam = sam_model_registry[model_type](checkpoint=sam_checkpoint)
+    sam = sam_model_registry[model_type](checkpoint=sam_checkpoint)
 
-    # # Create model, initialising with pretrained SAM parts
-    # model = my_SAM(
-    #     image_encoder=copy.deepcopy(sam.image_encoder),
-    #     prompt_encoder=copy.deepcopy(sam.prompt_encoder),
-    #     mask_decoder=copy.deepcopy(sam.mask_decoder),
-    # )
-    # model.eval()
+    # Create model, initialising with pretrained SAM parts
+    model = my_SAM(
+        image_encoder=copy.deepcopy(sam.image_encoder),
+        prompt_encoder=copy.deepcopy(sam.prompt_encoder),
+        mask_decoder=copy.deepcopy(sam.mask_decoder),
+    )
+    model.eval()
 
-    # # Specify optimiser
-    # # Only use trainable parameters in optimiser
-    # l_rate = hyperparams['l_rate']
-    # trainable_params = [param for param in model.parameters() if param.requires_grad]
-    # optimizer = optim.Adam(trainable_params, lr=l_rate)
+    # Specify optimiser
+    # Only use trainable parameters in optimiser
+    l_rate = hyperparams['l_rate']
+    trainable_params = [param for param in model.parameters() if param.requires_grad]
+    optimizer = optim.Adam(trainable_params, lr=l_rate)
 
-    # # define bce loss. Will call this and dice loss in train loop, unweighted
-    # loss_bce = nn.BCELoss()
+    # define bce loss. Will call this and dice loss in train loop, unweighted
+    loss_bce = nn.BCELoss()
 
-    # # How long to train for?
-    # num_epochs = int(hyperparams['num_epochs'])
+    # How long to train for?
+    num_epochs = int(hyperparams['num_epochs'])
 
-    # # Threshold for predicted segmentation mask
-    # threshold = hyperparams['threshold']
+    # Threshold for predicted segmentation mask
+    threshold = hyperparams['threshold']
 
-    # # start a new wandb run to track this script - LOG IN ON CONSOLE BEFORE RUNNING
-    # wandb.init(
-    #     # set the wandb project where this run will be logged
-    #     project="train_SAM_model",
+    # start a new wandb run to track this script - LOG IN ON CONSOLE BEFORE RUNNING
+    wandb.init(
+        # set the wandb project where this run will be logged
+        project="train_SAM_model",
         
-    #     # track hyperparameters and run metadata
-    #     config={
-    #     "learning_rate": l_rate,
-    #     "architecture": "2D SAM",
-    #     "unfrozen?": "Decoder",
-    #     "dataset": "IWOAI",
-    #     "epochs": num_epochs,
-    #     "threshold": threshold,
-    #     }
-    # )
+        # track hyperparameters and run metadata
+        config={
+        "learning_rate": l_rate,
+        "architecture": "2D SAM",
+        "unfrozen?": "Decoder",
+        "dataset": "IWOAI",
+        "epochs": num_epochs,
+        "threshold": threshold,
+        }
+    )
 
-    # model.to(device)
+    model.to(device)
 
-    # # # use multiple gpu in parallel if available
-    # # if torch.cuda.device_count() > 1:
-    # #     model = nn.DataParallel(model)
+    # # use multiple gpu in parallel if available
+    # if torch.cuda.device_count() > 1:
+    #     model = nn.DataParallel(model)
 
-    # # Train Loop
-    # for epoch in range(num_epochs):
-    #     print('trains')
-    #     # train mode
-    #     model.train()
-    #     running_loss = 0.0
-    #     dice_coeff = 0.0
-    #     n = 0    # counter for num of batches
+    # Train Loop
+    for epoch in range(num_epochs):
+        print('trains')
+        # train mode
+        model.train()
+        running_loss = 0.0
+        dice_coeff = 0.0
+        n = 0    # counter for num of batches
+        sys.stdout.flush()
+        # Loop through train loader
+        for inputs, targets in train_loader:
+            print("in loader", n)
 
-    #     # Loop through train loader
-    #     for idx, (inputs, targets) in enumerate(train_loader):
-    #         print("in loader")
+            inputs = inputs.to(device)
+            targets = targets.to(device)
 
-    #         inputs = inputs.to(device)
-    #         targets = targets.to(device)
+            optimizer.zero_grad()
 
-    #         optimizer.zero_grad()
+            # Forward
+            outputs = model(inputs)
+            bce = loss_bce(outputs, targets) #binary cross-entropy
+            dice = dice_loss(outputs, targets) #dice
+            loss = bce + dice #unweighted combination of the two
 
-    #         # Forward
-    #         outputs = model(inputs)
-    #         bce = loss_bce(outputs, targets) #binary cross-entropy
-    #         dice = dice_loss(outputs, targets) #dice
-    #         loss = bce + dice #unweighted combination of the two
+            # Backward, and update params
+            loss.backward()
+            optimizer.step()
 
-    #         # Backward, and update params
-    #         loss.backward()
-    #         optimizer.step()
+            running_loss += loss.detach().cpu().numpy()
+            dice_coeff += batch_dice_coeff(outputs>threshold, targets).detach().cpu().numpy()
+            n += 1
 
-    #         running_loss += loss.detach().cpu().numpy()
-    #         dice_coeff += batch_dice_coeff(outputs>threshold, targets).detach().cpu().numpy()
-    #         n += 1
-    #         print(idx)
+        # Get train metrics, averaged over number of images in batch
+        train_loss = running_loss/n
+        train_dice_av = dice_coeff/n
 
-    #     # Get train metrics, averaged over number of images in batch
-    #     train_loss = running_loss/n
-    #     train_dice_av = dice_coeff/n
+        # After each batch, loop through validation loader and get metrics
+        # set model to eval mode and reset metrics
+        model.eval()
+        running_loss = 0.0
+        dice_coeff = 0.0
+        n = 0
 
-    #     # After each batch, loop through validation loader and get metrics
-    #     # set model to eval mode and reset metrics
-    #     model.eval()
-    #     running_loss = 0.0
-    #     dice_coeff = 0.0
-    #     n = 0
+        # Perform loop without computing gradients
+        with torch.no_grad():
+            for inputs, targets in enumerate(val_loader):
+                inputs = inputs.to(device)
+                targets = targets.to(device)
 
-    #     # Perform loop without computing gradients
-    #     with torch.no_grad():
-    #         for idx, (inputs, targets) in enumerate(val_loader):
-    #             inputs = inputs.to(device)
-    #             targets = targets.to(device)
+                outputs = model(inputs)
+                bce = loss_bce(outputs, targets)
+                dice = dice_loss(outputs, targets)
+                loss = bce + dice
 
-    #             outputs = model(inputs)
-    #             bce = loss_bce(outputs, targets)
-    #             dice = dice_loss(outputs, targets)
-    #             loss = bce + dice
+                running_loss += loss.detach().cpu().numpy()
+                dice_coeff += batch_dice_coeff(outputs>threshold, targets).detach().cpu().numpy()
+                n += 1
 
-    #             running_loss += loss.detach().cpu().numpy()
-    #             dice_coeff += batch_dice_coeff(outputs>threshold, targets).detach().cpu().numpy()
-    #             n += 1
-
-    #     # Val metrics
-    #     val_loss = running_loss/n
-    #     val_dice_av = dice_coeff/n
+        # Val metrics
+        val_loss = running_loss/n
+        val_dice_av = dice_coeff/n
         
-    #     # log to wandb
-    #     wandb.log({"Train Loss": train_loss, "Train Dice Score": train_dice_av,
-    #             "Val Loss": val_loss, "Val Dice Score": val_dice_av})
+        # log to wandb
+        wandb.log({"Train Loss": train_loss, "Train Dice Score": train_dice_av,
+                "Val Loss": val_loss, "Val Dice Score": val_dice_av})
         
-    # # Once training is done, save model
-    # model_path = f"{hyperparams['run_name']}.pth"
-    # torch.save(model.state_dict(), model_path)
+    # Once training is done, save model
+    model_path = f"{hyperparams['run_name']}.pth"
+    torch.save(model.state_dict(), model_path)
 
-    # wandb.finish()
+    wandb.finish()
 
 
 if __name__ == '__main__':
