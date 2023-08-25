@@ -109,6 +109,8 @@ for epoch in range(num_epochs):
 
     # Loop through train loader
     for idx, (inputs, targets) in enumerate(train_loader):
+        print("in loader")
+
         inputs = inputs.to(device)
         targets = targets.to(device)
 
