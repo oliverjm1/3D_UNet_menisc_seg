@@ -66,6 +66,7 @@ def main():
         image_encoder=copy.deepcopy(sam.image_encoder),
         prompt_encoder=copy.deepcopy(sam.prompt_encoder),
         mask_decoder=copy.deepcopy(sam.mask_decoder),
+        freeze_encoder=False,
     )
     model.eval()
 
@@ -140,9 +141,11 @@ def main():
             n += 1
 
             # print out occassional metrics
-            if n%50 == 0:
+            if n%10 == 0:
                 print(f"{n} item bce: {bce}, dice: {dice}, total: {loss}, dice score: {batch_dice_coeff(outputs>threshold, targets).detach().cpu().numpy()}")
                 print(f"{n} cumulative loss: {running_loss/n}, dice: {dice_coeff/n}")
+                # log to wandb
+                wandb.log({"av loss": {running_loss/n}, "av dice": dice_coeff/n})
 
         # Get train metrics, averaged over number of images in batch
         train_loss = running_loss/n
