@@ -42,11 +42,15 @@ def main():
 
     print('dataloaders defined')
 
+    sys.stdout.flush()
+
     print('test getting an item')
     image, mask = val_dataset.__getitem__(0)
     print(image.shape)
     print(mask.shape)
     print('image, mask', image, mask)
+
+    sys.stdout.flush()
 
     print('trying dataloader')
     image2, mask2 = next(iter(val_loader))

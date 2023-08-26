@@ -1,5 +1,5 @@
 run_name=test_sam
-l_rate=1e-5
-num_epochs=10
+l_rate=1e-6
+num_epochs=5
 batch_size=1
 threshold=0.5
