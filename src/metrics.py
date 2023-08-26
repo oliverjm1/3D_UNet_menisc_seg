@@ -24,8 +24,8 @@ def batch_dice_coeff(input, target, smooth=1e-5):
 
 # Define Dice Loss
 # This is 1 - dice coeff.
-def dice_loss(input, target):
-    mean_loss = 1 - batch_dice_coeff(input, target)
+def dice_loss(input, target, smooth=1e-5):
+    mean_loss = 1 - batch_dice_coeff(input, target, smooth=smooth)
     return mean_loss
 
 # Loss that includes both binary cross-entropy and dice loss
