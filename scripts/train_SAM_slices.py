@@ -16,8 +16,6 @@ from datasets import KneeSegDataset2DSlicesSAM
 from utils import read_hyperparams
 
 def main():
-    print('here')
-
     # Set Device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print('device', device)
@@ -40,24 +38,12 @@ def main():
     train_loader = DataLoader(train_dataset, batch_size=int(hyperparams['batch_size']), num_workers = 1, shuffle=True, pin_memory=True)
     val_loader = DataLoader(val_dataset, batch_size=1, num_workers = 1, shuffle=False, pin_memory=True)
 
-    print('dataloaders defined')
-
-    sys.stdout.flush()
-
-    print('test getting an item')
-    image, mask = val_dataset.__getitem__(0)
-    print(image.shape)
-    print(mask.shape)
-    print('image, mask', image, mask)
-
-    sys.stdout.flush()
-
     print('trying dataloader')
+    sys.stdout.flush()
+
     image2, mask2 = next(iter(val_loader))
     print("image2, mask2", image2, mask2)
-
     sys.stdout.flush()
-    
 
     # Load in SAM with pretrained weights
     sam_checkpoint = "../models/sam_vit_b_01ec64.pth"
@@ -149,7 +135,7 @@ def main():
                 print(f"{n} item bce: {bce}, dice: {dice}, total: {loss}, dice score: {batch_dice_coeff(outputs>threshold, targets).detach().cpu().numpy()}")
                 print(f"{n} cumulative loss: {running_loss/n}, dice: {dice_coeff/n}")
                 # log to wandb
-                wandb.log({"av loss": {running_loss/n}, "av dice": dice_coeff/n})
+                wandb.log({"av loss": running_loss/n, "av dice": dice_coeff/n})
 
         # Get train metrics, averaged over number of images in batch
         train_loss = running_loss/n
