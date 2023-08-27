@@ -58,6 +58,14 @@ def main():
         mask_decoder=copy.deepcopy(sam.mask_decoder),
         freeze_encoder=False,
     )
+    
+    # If continuing training from previous epoch save, 
+    # get saved state dict and load
+    model_state_path = "test_sam.pth"
+    epochs_trained = 1
+    checkpoint = torch.load(model_state_path)
+    model.load_state_dict(checkpoint)
+
     model.eval()
 
     # Specify optimiser
@@ -96,7 +104,7 @@ def main():
     # # use multiple gpu in parallel if available
     # if torch.cuda.device_count() > 1:
     #     model = nn.DataParallel(model)
-    e_count = 0
+    e_count = epochs_trained
     # Train Loop
     for epoch in range(num_epochs):
         print('trains')
