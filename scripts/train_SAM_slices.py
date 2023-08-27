@@ -134,17 +134,17 @@ def main():
             n += 1
             
             # print out occassional metrics
-            if n%100 == 0:
+            if n%500 == 0:
                 minibatch_loss = running_loss - running_loss_pre_batch
                 minibatch_dice = dice_coeff-dice_pre_batch
                 mask = False
                 if targets.sum() != 0:
                     print("mask!")
                 print(f"{n} item bce: {bce}, dice: {dice}, total: {loss}, dice score: {batch_dice_coeff(outputs>threshold, targets).detach().cpu().numpy()}")
-                print(f"{n} minbatch loss: {minibatch_loss/100}, dice: {minibatch_dice/n}")
+                print(f"{n} minbatch loss: {minibatch_loss/500}, dice: {minibatch_dice/500}")
                 # log to wandb
                 wandb.log({"av loss": running_loss/n, "av dice": dice_coeff/n,
-                           "minibatch loss": minibatch_loss/100, "minibatch dice": minibatch_dice/100})
+                           "minibatch loss": minibatch_loss/500, "minibatch dice": minibatch_dice/500})
                 
                 running_loss_pre_batch = running_loss
                 dice_pre_batch = dice_coeff
@@ -162,7 +162,7 @@ def main():
 
         # Perform loop without computing gradients
         with torch.no_grad():
-            for inputs, targets in enumerate(val_loader):
+            for inputs, targets in val_loader:
                 inputs = inputs.to(device)
                 targets = targets.to(device)
 
