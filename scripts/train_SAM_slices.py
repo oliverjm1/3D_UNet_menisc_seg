@@ -158,6 +158,10 @@ def main():
         model.eval()
         running_loss = 0.0
         dice_coeff = 0.0
+
+        running_loss_pre_batch = 0
+        dice_pre_batch = 0
+
         n = 0
 
         # Perform loop without computing gradients
@@ -174,6 +178,22 @@ def main():
                 running_loss += loss.detach().cpu().numpy()
                 dice_coeff += batch_dice_coeff(outputs>threshold, targets).detach().cpu().numpy()
                 n += 1
+
+                # print out occassional metrics
+                if n%500 == 0:
+                    minibatch_loss = running_loss - running_loss_pre_batch
+                    minibatch_dice = dice_coeff-dice_pre_batch
+                    mask = False
+                    if targets.sum() != 0:
+                        print("mask!")
+                    print(f"{n} item bce: {bce}, dice: {dice}, total: {loss}, dice score: {batch_dice_coeff(outputs>threshold, targets).detach().cpu().numpy()}")
+                    print(f"{n} minbatch loss: {minibatch_loss/500}, dice: {minibatch_dice/500}")
+                    # log to wandb
+                    wandb.log({"av val loss": running_loss/n, "av val dice": dice_coeff/n,
+                            "minibatch val loss": minibatch_loss/500, "minibatch val dice": minibatch_dice/500})
+                    
+                    running_loss_pre_batch = running_loss
+                    dice_pre_batch = dice_coeff
 
         # Val metrics
         val_loss = running_loss/n
