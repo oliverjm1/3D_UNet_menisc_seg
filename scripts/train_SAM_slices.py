@@ -104,6 +104,10 @@ def main():
         model.train()
         running_loss = 0.0
         dice_coeff = 0.0
+
+        running_loss_pre_batch = 0
+        dice_pre_batch = 0
+        
         n = 0    # counter for num of batches
         sys.stdout.flush()
         # Loop through train loader
@@ -129,8 +133,6 @@ def main():
             dice_coeff += batch_dice_coeff(outputs>threshold, targets).detach().cpu().numpy()
             n += 1
             
-            running_loss_pre_batch = 0
-            dice_pre_batch = 0
             # print out occassional metrics
             if n%100 == 0:
                 minibatch_loss = running_loss - running_loss_pre_batch
@@ -143,6 +145,9 @@ def main():
                 # log to wandb
                 wandb.log({"av loss": running_loss/n, "av dice": dice_coeff/n,
                            "minibatch loss": minibatch_loss/100, "minibatch dice": minibatch_dice/100})
+                
+                running_loss_pre_batch = running_loss
+                dice_pre_batch = dice_coeff
 
         # Get train metrics, averaged over number of images in batch
         train_loss = running_loss/n
