@@ -22,13 +22,23 @@ class KneeSegDataset3D(Dataset):
     def __getitem__(self, index):
         path = self.file_paths[index]
 
-        # get full paths and read in
-        im_path = os.path.join(self.data_dir, self.split, path + '.im')
-        seg_path = os.path.join(self.data_dir, self.split, path + '.seg')
-        with h5py.File(im_path,'r') as hf:
-            image = np.array(hf['data'])
-        with h5py.File(seg_path,'r') as hf:
-            mask = np.array(hf['data'])
+        # Test data is arranged differently, and as mask is numpy as opposed to h5py
+        if self.split == 'test':
+            im_path = os.path.join(self.data_dir, self.split, path + '.im')
+            seg_path = os.path.join(self.data_dir, 'ground-truth', path + '.npy')
+            with h5py.File(im_path,'r') as hf:
+                image = np.array(hf['data'])
+            mask = np.load(seg_path)
+
+        # Train and Validation h5py files
+        else: 
+            # get full paths and read in
+            im_path = os.path.join(self.data_dir, self.split, path + '.im')
+            seg_path = os.path.join(self.data_dir, self.split, path + '.seg')
+            with h5py.File(im_path,'r') as hf:
+                image = np.array(hf['data'])
+            with h5py.File(seg_path,'r') as hf:
+                mask = np.array(hf['data'])
 
         #medial meniscus
         med_mask = mask[...,-1]
@@ -38,7 +48,7 @@ class KneeSegDataset3D(Dataset):
 
         #both together
         minisc_mask = np.add(med_mask,lat_mask)
-        mask = np.clip(minisc_mask, 0, 1)
+        mask = np.clip(minisc_mask, 0, 1) #just incase the two menisci ground truths overlap, clip at 1
 
         # crop image/mask
         image = crop_im(image)
