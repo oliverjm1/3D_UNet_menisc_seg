@@ -1,5 +1,7 @@
 import numpy as np
 from torch.nn import functional as F
+from torchvision.transforms.functional import resize
+from segment_anything.utils.transforms import ResizeLongestSide
 
 # Function to take MRI image, clip the pixel values to specified upper
 # bound, and normalise between zero and this bound.
@@ -45,6 +47,27 @@ def read_hyperparams(path):
             hyperparams[key] = value
 
     return hyperparams
+
+# Function that transforms an image slice into the accepted input format for SAM
+# My slices are 200x256 and SAM expects an rbg image 3x1024x1024
+def sam_slice_transform(image):
+    # Resizing, expanding channels, and padding to rgb 1024x1024
+    # Make longest size 1024
+    make_big = ResizeLongestSide(1024)
+
+    target_size = make_big.get_preprocess_shape(
+        image.shape[1], image.shape[2], make_big.target_length
+    )
+
+    big = resize(image, target_size, antialias=True)
+
+    # Expand to 3 channels for RBG input
+    rgb = big.repeat(3, 1, 1)
+
+    # Pad to 1024x1024 square
+    input = pad_to_square(rgb, 1024)
+    return input
+
 
 # Function that takes in an array of 3d image paths and the num of slices
 # in each image, returning array of (path, slice_index) to access each slice.

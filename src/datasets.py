@@ -1,12 +1,10 @@
 import torch
 from torch.utils.data import Dataset
 import torchvision.transforms as transforms
-from torchvision.transforms.functional import resize
 import h5py
 import os
 import numpy as np
-from segment_anything.utils.transforms import ResizeLongestSide
-from utils import crop_im, clip_and_norm, pad_to_square
+from utils import crop_im, clip_and_norm, pad_to_square, sam_slice_transform
 
 
 # Define the 3D Dataset class
@@ -66,7 +64,7 @@ class KneeSegDataset3D(Dataset):
         return image, mask
     
 # define dataset that will return a slice of an image ready for input into SAM
-class KneeSegDataset2DSAM(Dataset):
+"""class KneeSegDataset2DSAM(Dataset):
     def __init__(self, slice_paths, data_dir, split='train'):
         self.slice_paths = slice_paths
         self.data_dir = data_dir
@@ -131,7 +129,7 @@ class KneeSegDataset2DSAM(Dataset):
         # Pad to 1024x1024 square
         input_slice = pad_to_square(rgb_slice, 1024)
 
-        return input_slice, mask_slice
+        return input_slice, mask_slice"""
 
 
 # Dataset that opens image slice file, prepares for SAM input, and returns image and mask
@@ -162,21 +160,6 @@ class KneeSegDataset2DSlicesSAM(Dataset):
         mask = torch.from_numpy(mask).float().unsqueeze(0)
 
         # ------ SAM STUFF ------
-
-        # Resizing, expanding channels, and padding to rgb 1024x1024
-        # Make longest size 1024
-        make_big = ResizeLongestSide(1024)
-
-        target_size = make_big.get_preprocess_shape(
-            image.shape[1], image.shape[2], make_big.target_length
-        )
-
-        big = resize(image, target_size, antialias=True)
-
-        # Expand to 3 channels for RBG input
-        rgb = big.repeat(3, 1, 1)
-
-        # Pad to 1024x1024 square
-        input = pad_to_square(rgb, 1024)
+        input = sam_slice_transform(image)
 
         return input, mask
