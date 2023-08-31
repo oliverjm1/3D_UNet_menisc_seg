@@ -38,14 +38,18 @@ class KneeSegDataset3D(Dataset):
             with h5py.File(seg_path,'r') as hf:
                 mask = np.array(hf['data'])
 
-        #medial meniscus
-        med_mask = mask[...,-1]
+        if self.split == 'test':
+            minisc_mask = mask[...,-1]
+        else:
+            #medial meniscus
+            med_mask = mask[...,-1]
 
-        #lateral
-        lat_mask = mask[...,-2]
+            #lateral
+            lat_mask = mask[...,-2]
 
-        #both together
-        minisc_mask = np.add(med_mask,lat_mask)
+            #both together
+            minisc_mask = np.add(med_mask,lat_mask)
+            
         mask = np.clip(minisc_mask, 0, 1) #just incase the two menisci ground truths overlap, clip at 1
 
         # crop image/mask
