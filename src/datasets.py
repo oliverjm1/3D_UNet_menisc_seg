@@ -1,3 +1,10 @@
+"""
+File where all datasets are defined.
+For the 3D U-Net, the 3D dataset class was used, where the full images and masks were loaded.
+For training SAM, the 3D images/masks were all split up into slices and saved as 2D images. 
+These were then loaded in using the KneeSegDataset2DSlicesSAM dataset.
+"""
+
 import torch
 from torch.utils.data import Dataset
 import torchvision.transforms as transforms
@@ -49,7 +56,7 @@ class KneeSegDataset3D(Dataset):
 
             #both together
             minisc_mask = np.add(med_mask,lat_mask)
-            
+
         mask = np.clip(minisc_mask, 0, 1) #just incase the two menisci ground truths overlap, clip at 1
 
         # crop image/mask

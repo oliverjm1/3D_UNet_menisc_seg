@@ -1,4 +1,7 @@
-# my model, which is an alteration of the Segment Anything Model
+"""
+Define my version of the Segment Anything Model (https://github.com/facebookresearch/segment-anything).
+The GitHub repo for MedSAM was used as a guide for initialising (https://github.com/bowang-lab/MedSAM).
+"""
 
 import torch
 import torch.nn as nn

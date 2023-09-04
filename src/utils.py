@@ -1,3 +1,9 @@
+"""
+File containing utility functions.
+Mostly to do with preprocessing of images before feeding to model.
+E.g. clipping, cropping, and converting to SAM input format.
+"""
+
 import numpy as np
 from torch.nn import functional as F
 from torchvision.transforms.functional import resize

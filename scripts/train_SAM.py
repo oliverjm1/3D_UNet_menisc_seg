@@ -1,3 +1,9 @@
+"""
+Python script for training SAM.
+This was not used in the end, and SAM was instead trained purely using a slice dataset.
+The code for the train script used for SAM is found in train_SAM_slices.py.
+"""
+
 import torch
 import torch.nn as nn
 import torch.optim as optim

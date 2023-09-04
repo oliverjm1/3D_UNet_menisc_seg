@@ -1,3 +1,8 @@
+"""
+File containing functions to return different metric scores and losses.
+All focus on using the dice coefficient.
+"""
+
 import torch
 import torch.nn as nn
 

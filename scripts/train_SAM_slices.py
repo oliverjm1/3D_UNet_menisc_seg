@@ -1,3 +1,9 @@
+"""
+This is the script used for fine-tuning SAM on the 2D slice dataset created from the 3D images/masks.
+The SAM ViT-b encoder was used. SAM was initialised with the pre-trained model weights.
+
+"""
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
