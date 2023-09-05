@@ -3,11 +3,14 @@
 Repo containing code where SAM was fine-tuned on IWOAI 2019 knee MRI data.
 A 3D U-Net was also trained as a baseline.
 
-Models, dataset classes, metrics and utility functions are all defined in src.
+Models, dataset classes, metrics and utility functions are all defined in `src`.
 
-scripts folder contains train scripts for models.
+Train scripts for models are found in `scripts` folder.
 
-Data folder is empty. Put data here after cloning.
+`notebooks` contains all jupypter notebooks, most of which just test the code contained in the train scripts.
+Other notebooks are for extracting results from the generated masks (`Bland_Altman_Plots.ipynb`, `Dice_scores.ipynb`, `Hausdorff_Distance.ipynb`)
+
+`data` folder is empty. Put data here after cloning.
 
 Directory Tree:
 ```bash
