@@ -92,7 +92,7 @@ def main():
     # start a new wandb run to track this script - LOG IN ON CONSOLE BEFORE RUNNING
     wandb.init(
         # set the wandb project where this run will be logged
-        project="train_SAM_model",
+        project="train_MEDSAM_model",
         
         # track hyperparameters and run metadata
         config={
