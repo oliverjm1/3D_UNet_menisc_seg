@@ -1,3 +1,10 @@
+"""
+Python script for training the 3D U-Net.
+A .txt file containing hyperparameter values is read in at the start.
+This allowed for altering hyperparameters on ARC without editing the .py file.
+Weights and Biases was used to track runs.
+"""
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
