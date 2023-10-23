@@ -1,0 +1,5 @@
+run_name=test_medsam_frozen
+l_rate=1e-6
+num_epochs=5
+batch_size=1
+threshold=0.5
