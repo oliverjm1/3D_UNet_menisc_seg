@@ -77,6 +77,8 @@ model.to(device)
 if torch.cuda.device_count() > 1:
     model = nn.DataParallel(model)
 
+best_val_loss = 100
+
 # Train Loop
 for epoch in range(num_epochs):
 
@@ -134,6 +136,15 @@ for epoch in range(num_epochs):
     # log to wandb
     wandb.log({"Train Loss": train_loss, "Train Dice Score": train_dice_av,
                "Val Loss": val_loss, "Val Dice Score": val_dice_av})
+    
+    # save as best if val loss is lowest so far
+    if val_loss < best_val_loss:
+        model_path = f"{hyperparams['run_name']}_best_E.pth"
+        torch.save(model.state_dict(), model_path)
+        print(f"best epoch yet: {epoch}")
+        
+        #reset best as current
+        best_val_loss = val_loss
     
 # Once training is done, save model
 model_path = f"{hyperparams['run_name']}.pth"
