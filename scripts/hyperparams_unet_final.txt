@@ -1,0 +1,5 @@
+run_name=final_40_epoch
+l_rate=0.001082
+num_epochs=40
+batch_size=1
+threshold=0.297
