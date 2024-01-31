@@ -18,6 +18,8 @@ from metrics import bce_dice_loss, dice_coefficient, batch_dice_coeff
 from datasets import KneeSegDataset3D
 from utils import read_hyperparams
 
+os.environ["WANDB__SERVICE_WAIT"] = "300"
+
 # Set Device
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -26,24 +28,24 @@ criterion = bce_dice_loss
 
 # Define sweep config
 sweep_configuration = {
-    "method": "random",
+    "method": "bayes",
     "name": "sweep",
-    "metric": {"goal": "maximize", "name": "Val Dice Score"},
+    "metric": {"goal": "minimize", "name": "Val Loss"},
     "parameters": {
-        "batch_size": {"values": [1, 2, 4]},
-        "epochs": {"values": [5]},
-        "lr": {"values": [0.0005, 0.001, 0.002, 0.005, 0.01]},
-        "threshold": {"values": [0.3, 0.5, 0.7]},
-        "num_kernels": {"values": [8, 16, 32]},
+        "batch_size": {"values": [1,2,4,8]},
+        "epochs": {"values": [40]},
+        "lr": {"max": 0.01, "min": 0.0001},
+        "threshold": {"max": 0.9, "min": 0.1},
+        "num_kernels": {"values": [8, 16]},
     },
 }
 
 # Initialize sweep by passing in config.
 # Provide a name of the project.
-sweep_id = wandb.sweep(sweep=sweep_configuration, project="my-first-unet-sweep")
+sweep_id = wandb.sweep(sweep=sweep_configuration, project="40Epoch-unet-bayesian-sweep-final")
 
 def train_epoch(model, loader, optimizer, threshold):
-
+    
     # train mode
     model.train()
     running_loss = 0.0
@@ -102,6 +104,8 @@ def val_epoch(model, loader, threshold):
 
 def main():
 
+    print("in  main")
+
     run = wandb.init()
 
     # Define data path
@@ -110,7 +114,10 @@ def main():
     # Get the paths
     train_paths = np.array([os.path.basename(i).split('.')[0] for i in glob.glob(f'{DATA_DIR}/train/*.im')])
     val_paths = np.array([os.path.basename(i).split('.')[0] for i in glob.glob(f'{DATA_DIR}/valid/*.im')])
-
+    
+    print(train_paths[:5])
+    print(val_paths[:5])
+    
     # Define the dataset and dataloaders
     train_dataset = KneeSegDataset3D(train_paths, DATA_DIR)
     val_dataset = KneeSegDataset3D(val_paths, DATA_DIR, split='valid')
@@ -156,5 +163,5 @@ def main():
         )
 
 # Start sweep job.
-wandb.agent(sweep_id, function=main, count= 10)
+wandb.agent(sweep_id, function=main, count= 20)
 
