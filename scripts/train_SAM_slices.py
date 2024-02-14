@@ -67,10 +67,11 @@ def main():
     
     # If continuing training from previous epoch save, 
     # get saved state dict and load
-    model_state_path = "test_sam.pth"
-    epochs_trained = 1
-    checkpoint = torch.load(model_state_path)
-    model.load_state_dict(checkpoint)
+    # model_state_path = "test_sam.pth"
+    # epochs_trained = 1
+    # checkpoint = torch.load(model_state_path)
+    # model.load_state_dict(checkpoint)
+    epochs_trained = 0
 
     model.eval()
 
@@ -108,8 +109,8 @@ def main():
     model.to(device)
 
     # # use multiple gpu in parallel if available
-    # if torch.cuda.device_count() > 1:
-    #     model = nn.DataParallel(model)
+    if torch.cuda.device_count() > 1:
+        model = nn.DataParallel(model)
     e_count = epochs_trained
     # Train Loop
     for epoch in range(num_epochs):
