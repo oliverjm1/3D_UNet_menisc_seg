@@ -41,8 +41,9 @@ def main():
     # Define the dataset and dataloaders
     train_dataset = KneeSegDataset2DSlicesSAM(train_paths, DATA_DIR)
     val_dataset = KneeSegDataset2DSlicesSAM(val_paths, DATA_DIR, split='valid')
-    train_loader = DataLoader(train_dataset, batch_size=int(hyperparams['batch_size']), num_workers = 1, shuffle=True, pin_memory=True)
-    val_loader = DataLoader(val_dataset, batch_size=1, num_workers = 1, shuffle=False, pin_memory=True)
+    batch_size = int(hyperparams['batch_size'])
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, num_workers = 1, shuffle=True, pin_memory=True)
+    val_loader = DataLoader(val_dataset, batch_size=batch_size, num_workers = 1, shuffle=False, pin_memory=True)
 
     print('trying dataloader')
     sys.stdout.flush()
@@ -152,7 +153,7 @@ def main():
             if n%500 == 0:
                 minibatch_loss = running_loss - running_loss_pre_batch
                 minibatch_dice = dice_coeff-dice_pre_batch
-                mask = False
+
                 if targets.sum() != 0:
                     print("mask!")
                 print(f"{n} item bce: {bce}, dice: {dice}, total: {loss}, dice score: {batch_dice_coeff(outputs>threshold, targets).detach().cpu().numpy()}")
@@ -198,7 +199,7 @@ def main():
                 if n%500 == 0:
                     minibatch_loss = running_loss - running_loss_pre_batch
                     minibatch_dice = dice_coeff-dice_pre_batch
-                    mask = False
+
                     if targets.sum() != 0:
                         print("mask!")
                     print(f"{n} item bce: {bce}, dice: {dice}, total: {loss}, dice score: {batch_dice_coeff(outputs>threshold, targets).detach().cpu().numpy()}")
