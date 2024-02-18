@@ -113,6 +113,9 @@ def main():
     if torch.cuda.device_count() > 1:
         model = nn.DataParallel(model)
     e_count = epochs_trained
+
+    best_val_loss = 100
+
     # Train Loop
     for epoch in range(num_epochs):
         print('trains')
@@ -148,7 +151,7 @@ def main():
             running_loss += loss.detach().cpu().numpy()
             dice_coeff += batch_dice_coeff(outputs>threshold, targets).detach().cpu().numpy()
             n += 1
-            
+
             # print out occassional metrics
             if n%500 == 0:
                 minibatch_loss = running_loss - running_loss_pre_batch
@@ -219,9 +222,14 @@ def main():
         wandb.log({"Train Loss": train_loss, "Train Dice Score": train_dice_av,
                 "Val Loss": val_loss, "Val Dice Score": val_dice_av})
 
-        # save at epoch end
-        model_path = f"{hyperparams['run_name']}_e{e_count}.pth"
-        torch.save(model.state_dict(), model_path)
+        # save as best if val loss is lowest so far
+        if val_loss < best_val_loss:
+            model_path = f"{hyperparams['run_name']}_best_E.pth"
+            torch.save(model.state_dict(), model_path)
+            print(f"best epoch yet: {epoch}")
+            
+            #reset best as current
+            best_val_loss = val_loss
 
         e_count += 1
         
