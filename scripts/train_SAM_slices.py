@@ -109,6 +109,8 @@ def main():
 
     model.to(device)
 
+    print(f"CUDA COUNT: {torch.cuda.device_count()}")
+
     # # use multiple gpu in parallel if available
     if torch.cuda.device_count() > 1:
         model = nn.DataParallel(model)
