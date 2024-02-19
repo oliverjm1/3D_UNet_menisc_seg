@@ -232,6 +232,10 @@ def main():
         # log to wandb
         wandb.log({"Train Loss": train_loss, "Train Dice Score": train_dice_av,
                 "Val Loss": val_loss, "Val Dice Score": val_dice_av})
+        
+        # print metrics
+        print(f"Train Loss: {train_loss}, Train Dice Score: {train_dice_av},")
+        print(f"Val Loss: {val_loss}, Val Dice Score: {val_dice_av}")
 
         # save as best if val loss is lowest so far
         if val_loss < best_val_loss:
