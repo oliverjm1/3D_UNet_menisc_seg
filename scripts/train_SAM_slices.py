@@ -59,11 +59,14 @@ def main():
     sam = sam_model_registry[model_type](checkpoint=sam_checkpoint)
 
     # Create model, initialising with pretrained SAM parts
+    frozen_enc = (hyperparams['frozen_enc'] == "True")
+    print(f"frozen enc? {frozen_enc}")
+
     model = my_SAM(
         image_encoder=copy.deepcopy(sam.image_encoder),
         prompt_encoder=copy.deepcopy(sam.prompt_encoder),
         mask_decoder=copy.deepcopy(sam.mask_decoder),
-        freeze_encoder=False,
+        freeze_encoder=frozen_enc,
     )
     
     # If continuing training from previous epoch save, 
@@ -155,17 +158,19 @@ def main():
             n += 1
 
             # print out occassional metrics
-            if n%500 == 0:
+            # how often to print?
+            how_often = 100
+            if n%how_often == 0:
                 minibatch_loss = running_loss - running_loss_pre_batch
                 minibatch_dice = dice_coeff-dice_pre_batch
 
                 if targets.sum() != 0:
                     print("mask!")
                 print(f"{n} item bce: {bce}, dice: {dice}, total: {loss}, dice score: {batch_dice_coeff(outputs>threshold, targets).detach().cpu().numpy()}")
-                print(f"{n} minbatch loss: {minibatch_loss/500}, dice: {minibatch_dice/500}")
+                print(f"{n} minbatch loss: {minibatch_loss/how_often}, dice: {minibatch_dice/how_often}")
                 # log to wandb
                 wandb.log({"av loss": running_loss/n, "av dice": dice_coeff/n,
-                           "minibatch loss": minibatch_loss/500, "minibatch dice": minibatch_dice/500})
+                           "minibatch loss": minibatch_loss/how_often, "minibatch dice": minibatch_dice/how_often})
                 
                 running_loss_pre_batch = running_loss
                 dice_pre_batch = dice_coeff
@@ -201,17 +206,17 @@ def main():
                 n += 1
 
                 # print out occassional metrics
-                if n%500 == 0:
+                if n%how_often == 0:
                     minibatch_loss = running_loss - running_loss_pre_batch
                     minibatch_dice = dice_coeff-dice_pre_batch
 
                     if targets.sum() != 0:
                         print("mask!")
                     print(f"{n} item bce: {bce}, dice: {dice}, total: {loss}, dice score: {batch_dice_coeff(outputs>threshold, targets).detach().cpu().numpy()}")
-                    print(f"{n} minbatch loss: {minibatch_loss/500}, dice: {minibatch_dice/500}")
+                    print(f"{n} minbatch loss: {minibatch_loss/how_often}, dice: {minibatch_dice/how_often}")
                     # log to wandb
                     wandb.log({"av val loss": running_loss/n, "av val dice": dice_coeff/n,
-                            "minibatch val loss": minibatch_loss/500, "minibatch val dice": minibatch_dice/500})
+                            "minibatch val loss": minibatch_loss/how_often, "minibatch val dice": minibatch_dice/how_often})
                     
                     running_loss_pre_batch = running_loss
                     dice_pre_batch = dice_coeff
