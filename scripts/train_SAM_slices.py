@@ -94,6 +94,10 @@ def main():
     # Threshold for predicted segmentation mask
     threshold = hyperparams['threshold']
     
+    # OPTION FOR RUNNING WANDB OFFLINE
+    # os.environ["WANDB_API_KEY"] = MY_API_KEY
+    # os.environ["WANDB_MODE"] = "offline"
+
     # start a new wandb run to track this script - LOG IN ON CONSOLE BEFORE RUNNING
     wandb.init(
         # set the wandb project where this run will be logged
