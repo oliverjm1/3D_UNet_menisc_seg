@@ -39,10 +39,6 @@ def main():
     l_rate = random.uniform(1e-7, 1e-5)
     print(f"learning rate = {l_rate}")
 
-    #threshold
-    threshold = random.uniform(0,1)
-    print(f"threshold = {threshold}")
-
     # Read in hyperparams from txt file (will keep this in scripts folder)
     # Each line in file in format (e.g. learning_rate=0.001)
 
@@ -106,6 +102,9 @@ def main():
 
     # How long to train for?
     num_epochs = int(hyperparams['num_epochs'])
+
+    # threshold for assigning pixel probability to meniscus or background
+    threshold = 0.5
     
     # OPTION FOR RUNNING WANDB OFFLINE
     # os.environ["WANDB_API_KEY"] = MY_API_KEY
