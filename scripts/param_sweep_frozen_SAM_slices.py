@@ -36,14 +36,14 @@ def main():
     print(f"batch size = {batch_size}")
 
     #learning rate
-    lr_list = [1e-7, 5e-7, 1e-6, 5e-6, 1e-5]
+    lr_list = [1e-6, 5e-6, 1e-5, 5e-5, 1e-4]
     l_rate = random.choice(lr_list)
     print(f"learning rate = {l_rate}")
 
     # Read in hyperparams from txt file (will keep this in scripts folder)
     # Each line in file in format (e.g. learning_rate=0.001)
 
-    hyperparams = read_hyperparams('sam_sweep_params.txt')
+    hyperparams = read_hyperparams('frozen_sam_sweep_params.txt')
     print(hyperparams)
 
     # Define data path
