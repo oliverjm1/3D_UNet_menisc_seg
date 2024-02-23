@@ -119,6 +119,7 @@ def main():
         # track hyperparameters and run metadata
         config={
         "learning_rate": l_rate,
+        "batch_size": batch_size,
         "architecture": "2D SAM",
         "unfrozen?": "All",
         "dataset": "IWOAI",
