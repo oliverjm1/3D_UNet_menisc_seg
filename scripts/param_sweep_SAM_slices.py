@@ -36,7 +36,7 @@ def main():
     print(f"batch size = {batch_size}")
 
     #learning rate
-    lr_list = [1e-7, 5e-7, 1e-6, 5e-6, 1e-5]
+    lr_list = [1e-7, 5e-7, 1e-6, 5e-6]
     l_rate = random.choice(lr_list)
     print(f"learning rate = {l_rate}")
 
