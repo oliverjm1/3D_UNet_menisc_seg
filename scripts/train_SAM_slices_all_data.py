@@ -28,7 +28,7 @@ def main():
 
     # Read in hyperparams from txt file (will keep this in scripts folder)
     # Each line in file in format (e.g. learning_rate=0.001)
-    hyperparams = read_hyperparams('hyperparams_sam.txt')
+    hyperparams = read_hyperparams('hyperparams_sam_final.txt')
     print(hyperparams)
 
     # Define data path
