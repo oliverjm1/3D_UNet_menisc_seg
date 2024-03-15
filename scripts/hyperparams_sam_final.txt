@@ -1,6 +1,6 @@
-run_name=sam_e2e_final
-l_rate=5e-7
-num_epochs=20
-batch_size=16
+run_name=sam_frozen_e2e_final
+l_rate=5e-6
+num_epochs=30
+batch_size=8
 threshold=0.5
-frozen_enc=False
+frozen_enc=True

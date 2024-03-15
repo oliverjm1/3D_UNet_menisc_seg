@@ -104,7 +104,7 @@ def main():
     # start a new wandb run to track this script - LOG IN ON CONSOLE BEFORE RUNNING
     wandb.init(
         # set the wandb project where this run will be logged
-        project="SAM_e2e_final",
+        project="SAM_frozen_e2e_final",
         
         # track hyperparameters and run metadata
         config={
