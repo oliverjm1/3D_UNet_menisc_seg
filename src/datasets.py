@@ -16,10 +16,11 @@ from utils import crop_im, clip_and_norm, pad_to_square, sam_slice_transform
 
 # Define the 3D Dataset class
 class KneeSegDataset3D(Dataset):
-    def __init__(self, file_paths, data_dir, split='train'):
+    def __init__(self, file_paths, data_dir, split='train', transform=None):
         self.file_paths = file_paths
         self.data_dir = data_dir
         self.split = split
+        self.transform = transform
 
     def __len__(self):
         return len(self.file_paths)
@@ -71,6 +72,8 @@ class KneeSegDataset3D(Dataset):
         mask = torch.from_numpy(mask).float().unsqueeze(0)
 
         # Do transforms here later
+        if self.transform != None:
+            image = self.transform(image)
 
         return image, mask
     
