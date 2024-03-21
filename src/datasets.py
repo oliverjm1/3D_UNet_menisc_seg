@@ -5,6 +5,7 @@ For training SAM, the 3D images/masks were all split up into slices and saved as
 These were then loaded in using the KneeSegDataset2DSlicesSAM dataset.
 """
 
+import random
 import torch
 from torch.utils.data import Dataset
 import torchvision.transforms as transforms
@@ -15,12 +16,15 @@ from utils import crop_im, clip_and_norm, pad_to_square, sam_slice_transform
 
 
 # Define the 3D Dataset class
+# Image and mask both need same transforms to be applied, so DO NOT USE RANDOM TRANSFORMS
+# - use e.g. transforms.functional.hflip which has no randomness.
 class KneeSegDataset3D(Dataset):
-    def __init__(self, file_paths, data_dir, split='train', transform=None):
+    def __init__(self, file_paths, data_dir, split='train', transform=None, transform_chance=0.5):
         self.file_paths = file_paths
         self.data_dir = data_dir
         self.split = split
         self.transform = transform
+        self.transform_chance = transform_chance
 
     def __len__(self):
         return len(self.file_paths)
@@ -71,9 +75,13 @@ class KneeSegDataset3D(Dataset):
         image = torch.from_numpy(image).float().unsqueeze(0)
         mask = torch.from_numpy(mask).float().unsqueeze(0)
 
-        # Do transforms here later
+        # transforms?
         if self.transform != None:
-            image = self.transform(image)
+
+            # Need to take care of randomness myself because need same transform applied to image and gt
+            if random.random() < self.transform_chance:
+                image = self.transform(image)
+                mask = self.transform(mask)
 
         return image, mask
     
