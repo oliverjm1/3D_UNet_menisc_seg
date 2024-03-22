@@ -3,3 +3,4 @@ l_rate=0.001
 num_epochs=40
 batch_size=4
 threshold=0.5
+transforms=True
