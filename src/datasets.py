@@ -53,11 +53,16 @@ class KneeSegDataset3D(Dataset):
         if self.split == 'test':
             minisc_mask = mask[...,-1]
         else:
+
             #medial meniscus
             med_mask = mask[...,-1]
 
+            # THERE IS ONE ERRANT CASE IN TRAIN SET. LATERAL MENISCUS IS AT WRONG INDEX
             #lateral
-            lat_mask = mask[...,-2]
+            if path == 'train_026_V01':
+                lat_mask = mask[...,2]
+            else:
+                lat_mask = mask[...,-2]
 
             #both together
             minisc_mask = np.add(med_mask,lat_mask)
