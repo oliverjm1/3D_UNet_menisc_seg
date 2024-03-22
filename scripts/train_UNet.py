@@ -9,6 +9,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
+import torchvision.transforms as transforms
 import numpy as np
 import glob
 import os
@@ -35,8 +36,11 @@ DATA_DIR = '../data'
 train_paths = np.array([os.path.basename(i).split('.')[0] for i in glob.glob(f'{DATA_DIR}/train/*.im')])
 val_paths = np.array([os.path.basename(i).split('.')[0] for i in glob.glob(f'{DATA_DIR}/valid/*.im')])
 
+# Let's try a horizontal flip transform
+hflip = transforms.functional.hflip
+
 # Define the dataset and dataloaders
-train_dataset = KneeSegDataset3D(train_paths, DATA_DIR)
+train_dataset = KneeSegDataset3D(train_paths, DATA_DIR, transform=hflip)
 val_dataset = KneeSegDataset3D(val_paths, DATA_DIR, split='valid')
 train_loader = DataLoader(train_dataset, batch_size=int(hyperparams['batch_size']), num_workers = 1, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=2, num_workers = 1, shuffle=False)
@@ -58,7 +62,7 @@ threshold = hyperparams['threshold']
 # start a new wandb run to track this script - LOG IN ON CONSOLE BEFORE RUNNING
 wandb.init(
     # set the wandb project where this run will be logged
-    project="train_seg_model",
+    project="unet_with_aug",
     
     # track hyperparameters and run metadata
     config={
