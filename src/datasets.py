@@ -88,6 +88,8 @@ class KneeSegDataset3D(Dataset):
                 image = self.transform(image)
                 mask = self.transform(mask)
 
+                print("We flipping")
+
         return image, mask
     
 # define dataset that will return a slice of an image ready for input into SAM

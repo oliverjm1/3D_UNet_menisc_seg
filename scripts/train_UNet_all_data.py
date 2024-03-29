@@ -9,6 +9,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, ConcatDataset
+import torchvision.transforms as transforms
 import numpy as np
 import glob
 import os
@@ -35,9 +36,15 @@ DATA_DIR = '../data'
 train_paths = np.array([os.path.basename(i).split('.')[0] for i in glob.glob(f'{DATA_DIR}/train/*.im')])
 val_paths = np.array([os.path.basename(i).split('.')[0] for i in glob.glob(f'{DATA_DIR}/valid/*.im')])
 
+if hyperparams['transforms'] == "True":
+    # Let's try a horizontal flip transform
+    transform = transforms.functional.hflip
+else:
+    transform = None
+
 # Define the dataset and dataloaders
-train_dataset = KneeSegDataset3D(train_paths, DATA_DIR)
-val_dataset = KneeSegDataset3D(val_paths, DATA_DIR, split='valid')
+train_dataset = KneeSegDataset3D(train_paths, DATA_DIR, transform=transform)
+val_dataset = KneeSegDataset3D(val_paths, DATA_DIR, split='valid', transform=transform)
 
 # Combine the datasets
 train_val_dataset = ConcatDataset([train_dataset,val_dataset])
