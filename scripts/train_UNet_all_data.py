@@ -77,6 +77,7 @@ wandb.init(
     "dataset": "IWOAI",
     "epochs": num_epochs,
     "threshold": threshold,
+    "aug": hyperparams['transforms'],
     }
 )
 
