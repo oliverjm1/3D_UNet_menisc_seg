@@ -7,6 +7,7 @@ These were then loaded in using the KneeSegDataset2DSlicesSAM dataset.
 
 import random
 import torch
+import torch.nn.functional as F
 from torch.utils.data import Dataset
 import torchvision.transforms as transforms
 import h5py
@@ -91,75 +92,6 @@ class KneeSegDataset3D(Dataset):
                 print("We flipping")
 
         return image, mask
-    
-# define dataset that will return a slice of an image ready for input into SAM
-"""class KneeSegDataset2DSAM(Dataset):
-    def __init__(self, slice_paths, data_dir, split='train'):
-        self.slice_paths = slice_paths
-        self.data_dir = data_dir
-        self.split = split
-
-    def __len__(self):
-        return len(self.slice_paths)
-
-    def __getitem__(self, index):
-        path_and_slice_num = self.slice_paths[index]
-
-        # extract the path and slice index from the array element
-        path = path_and_slice_num[0]
-        slice_num = int(path_and_slice_num[1])
-
-        # get full paths and read in whole image
-        im_path = os.path.join(self.data_dir, self.split, path + '.im')
-        seg_path = os.path.join(self.data_dir, self.split, path + '.seg')
-        with h5py.File(im_path,'r') as hf:
-            image = np.array(hf['data'])
-        with h5py.File(seg_path,'r') as hf:
-            mask = np.array(hf['data'])
-
-        #medial meniscus
-        med_mask = mask[...,-1]
-
-        #lateral
-        lat_mask = mask[...,-2]
-
-        #both together
-        minisc_mask = np.add(med_mask,lat_mask)
-        mask = np.clip(minisc_mask, 0, 1)
-
-        # crop image/mask
-        image = crop_im(image)
-        mask = crop_im(mask)
-
-        # normalise image
-        image = clip_and_norm(image, 0.005)
-
-        # turn to torch, add channel dimension
-        image = torch.from_numpy(image).float().unsqueeze(0)
-        mask = torch.from_numpy(mask).float().unsqueeze(0)
-
-        # ------ SAM STUFF ------
-        # Get one slice using the index
-        im_slice = image[...,slice_num]
-        mask_slice = mask[...,slice_num]
-
-        # Resizing, expanding channels, and padding to rgb 1024x1024
-        # Make longest size 1024
-        make_big = ResizeLongestSide(1024)
-        target_size = make_big.get_preprocess_shape(
-            im_slice.shape[1], im_slice.shape[2], make_big.target_length
-        )
-        big_slice = resize(im_slice, target_size, antialias=True)
-
-        # Expand to 3 channels for RBG input
-        expand_dims = transforms.Lambda(lambda x: x.expand(3, -1, -1)) 
-        rgb_slice = expand_dims(big_slice)
-        
-        # Pad to 1024x1024 square
-        input_slice = pad_to_square(rgb_slice, 1024)
-
-        return input_slice, mask_slice"""
-
 
 # Dataset that opens image slice file, prepares for SAM input, and returns image and mask
 class KneeSegDataset2DSlicesSAM(Dataset):
@@ -192,3 +124,70 @@ class KneeSegDataset2DSlicesSAM(Dataset):
         input = sam_slice_transform(image)
 
         return input, mask
+
+# Dataset class for segmentation task of SKM-TEA data.
+# Return image and corresponding meniscus mask ground truth.
+# Make sure that image has been rescaled to match OAI data (384,384,160).
+# Then perform same cropping as done with training data.
+class SKMTEASegDataset(Dataset):
+    def __init__(self, file_paths, data_dir):
+        self.file_paths = file_paths
+        self.data_dir = data_dir
+
+    def __len__(self):
+        return len(self.file_paths)
+
+    def __getitem__(self, index):
+        file_path = self.file_paths[index]
+
+        full_path = os.path.join(self.data_dir, file_path)
+
+        # get full paths and read in
+        # Open the HDF5 file in read mode
+        with h5py.File(full_path, 'r') as hf:
+            # Load Echo 1 and Echo 2 data
+            echo1 = hf['echo1'][:].astype(np.float64)
+            echo2 = hf['echo2'][:].astype(np.float64)
+    
+            # Load segmentation data (One-hot encoded, 6 classes)
+            seg = hf['seg'][:]
+
+        # combine echos in some way... DECIDE BEST WAY - CLIP USING PERCENTILES -> HISTOGRAM NORM??
+        # Normalise echos to between 0 and 1
+        norm_echo1 = clip_and_norm(echo1)
+        norm_echo2 = clip_and_norm(echo2)
+
+        # Compute the RSS of the two rescaled echos
+        rss = np.sqrt(norm_echo1**2 + norm_echo2**2)
+
+        # clip and rescale rss image
+        image = clip_and_norm(rss, 0.6)
+
+        # menisci
+        med_mask = seg[...,4]
+
+        lat_mask = seg[...,5]
+
+        # combine
+        minisc_mask = np.add(med_mask, lat_mask)
+
+        mask = np.clip(minisc_mask, 0, 1) #just incase the two menisci ground truths overlap, clip at 1
+
+        # Resize image to match OAI (384,384,160)
+        # Convert the 3D image to a PyTorch tensor
+        image_tensor = torch.tensor(image).unsqueeze(0).unsqueeze(0)  # Shape: (1, 1, 512, 512, 160)
+        # Resize the image using trilinear interpolation
+        resized_tensor = F.interpolate(image_tensor, size=(384, 384, 160), mode='trilinear', align_corners=True)
+        # Back to numpy
+        resized_image = resized_tensor.squeeze(0).squeeze(0).numpy()
+
+        # crop image/mask
+        image = crop_im(resized_image)
+        mask = crop_im(mask)
+
+        # turn to torch, add channel dimension, and return
+        image = torch.from_numpy(image).float().unsqueeze(0)
+        mask = torch.from_numpy(mask).float().unsqueeze(0)
+
+        # transforms?
+        return image, mask
