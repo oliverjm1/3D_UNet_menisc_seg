@@ -13,7 +13,7 @@ import torchvision.transforms as transforms
 import h5py
 import os
 import numpy as np
-from utils import crop_im, clip_and_norm, pad_to_square, sam_slice_transform
+from src.utils import crop_im, clip_and_norm, pad_to_square, sam_slice_transform
 
 
 # Define the 3D Dataset class
@@ -181,13 +181,14 @@ class SKMTEASegDataset(Dataset):
         # Back to numpy
         resized_image = resized_tensor.squeeze(0).squeeze(0).numpy()
 
-        # crop image/mask
+        # crop image (unsure on mask yet)
         image = crop_im(resized_image)
-        mask = crop_im(mask)
+        #mask = crop_im(mask)
 
         # turn to torch, add channel dimension, and return
         image = torch.from_numpy(image).float().unsqueeze(0)
         mask = torch.from_numpy(mask).float().unsqueeze(0)
 
         # transforms?
+
         return image, mask

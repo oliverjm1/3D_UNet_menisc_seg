@@ -17,3 +17,6 @@ src/__pycache__/
 # ignore model save files (too big to github)
 models/*
 !models/models.md
+
+# ingore cloud files
+*.icloud
