@@ -163,5 +163,5 @@ def main():
         )
 
 # Start sweep job.
-wandb.agent(sweep_id, function=main, count= 20)
+wandb.agent(sweep_id, function=main, count=20)
 
