@@ -14,6 +14,7 @@ import h5py
 import os
 import numpy as np
 from src.utils import crop_im, clip_and_norm, pad_to_square, sam_slice_transform
+from src.skmtea_utils import echo_combination, skmtea_to_input_resize_crop
 
 
 # Define the 3D Dataset class
@@ -153,15 +154,7 @@ class SKMTEASegDataset(Dataset):
             seg = hf['seg'][:]
 
         # combine echos in some way... DECIDE BEST WAY - CLIP USING PERCENTILES -> HISTOGRAM NORM??
-        # Normalise echos to between 0 and 1
-        norm_echo1 = clip_and_norm(echo1)
-        norm_echo2 = clip_and_norm(echo2)
-
-        # Compute the RSS of the two rescaled echos
-        rss = np.sqrt(norm_echo1**2 + norm_echo2**2)
-
-        # clip and rescale rss image
-        image = clip_and_norm(rss, 0.6)
+        image = echo_combination(echo1, echo2)
 
         # menisci
         med_mask = seg[...,4]
@@ -173,16 +166,8 @@ class SKMTEASegDataset(Dataset):
 
         mask = np.clip(minisc_mask, 0, 1) #just incase the two menisci ground truths overlap, clip at 1
 
-        # Resize image to match OAI (384,384,160)
-        # Convert the 3D image to a PyTorch tensor
-        image_tensor = torch.tensor(image).unsqueeze(0).unsqueeze(0)  # Shape: (1, 1, 512, 512, 160)
-        # Resize the image using trilinear interpolation
-        resized_tensor = F.interpolate(image_tensor, size=(384, 384, 160), mode='trilinear', align_corners=True)
-        # Back to numpy
-        resized_image = resized_tensor.squeeze(0).squeeze(0).numpy()
-
-        # crop image
-        image = crop_im(resized_image)
+        # Resize image to match OAI (384,384,160), and then crop
+        image = skmtea_to_input_resize_crop(image)
 
         # turn to torch, add channel dimension, and return
         image = torch.from_numpy(image).float().unsqueeze(0)

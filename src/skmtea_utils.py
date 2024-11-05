@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import torch
 from torch.nn import functional as F
-from src.utils import crop_im, undo_crop
+from src.utils import crop_im, undo_crop, clip_and_norm
 
 def skmtea_to_input_resize_crop(image) -> np.ndarray:
     """Function for transforming images from original skm-tea size 
@@ -32,7 +32,7 @@ def skmtea_to_input_resize_crop(image) -> np.ndarray:
 
     return cropped_image
 
-def output_to_skmtea_pad_resize(mask, as_numpy = False) -> np.ndarray:
+def output_to_skmtea_pad_resize(mask, as_numpy = False):
     """Function to transform output masks back to original skm-tea size.
 
     Args:
@@ -58,3 +58,23 @@ def output_to_skmtea_pad_resize(mask, as_numpy = False) -> np.ndarray:
         resized_image = resized_tensor
 
     return resized_image
+
+def echo_combination(echo1: np.ndarray, echo2: np.ndarray):
+    """Function to combine the two echos into a final image.
+    I DO NOT YET KNOW BEST WAY OF DOING THIS. CURRENTLY DOING ROOT SUM OF SQUARES.
+
+    Returns:
+        np.ndarray: combination of the two echos
+    """
+
+    # Normalise echos to between 0 and 1
+    norm_echo1 = clip_and_norm(echo1)
+    norm_echo2 = clip_and_norm(echo2)
+
+    # Compute the RSS of the two rescaled echos
+    rss = np.sqrt(norm_echo1**2 + norm_echo2**2)
+
+    # clip and rescale rss image based on looking at histogram of signal
+    combined_image = clip_and_norm(rss, 0.6)
+
+    return combined_image
