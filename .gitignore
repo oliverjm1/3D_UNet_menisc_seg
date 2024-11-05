@@ -20,3 +20,7 @@ models/*
 
 # ingore cloud files
 *.icloud
+
+# notebook checkpoints
+notebooks/.ipynb_checkpoints
+
