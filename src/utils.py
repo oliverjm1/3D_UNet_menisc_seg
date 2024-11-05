@@ -34,6 +34,31 @@ def crop_im(image):
 
     return cropped
 
+def undo_crop(cropped_mask):
+    """Function to pad the cropped mask in/outputs back to full size
+
+    Args:
+        cropped_mask (np.ndarray): Either a previously cropped mask,
+        or an outputted prediction of size (200, 256, 160)
+
+    Returns:
+        np.ndarray: padded mask of size (384, 384, 160)
+    """
+    # Original dimensions
+    original_shape = (384, 384, 160)
+    
+    # Cropping indices from the crop_im function
+    dim1_lower, dim1_upper = 120, 320
+    dim2_lower, dim2_upper = 70, 326
+    
+    # Initialize a zero array with the original shape
+    padded_image = np.zeros(original_shape, dtype=cropped_mask.dtype)
+    
+    # Place the cropped image in the correct location within the zero-padded array
+    padded_image[dim1_lower:dim1_upper, dim2_lower:dim2_upper, :] = cropped_mask
+    
+    return padded_image
+
 # This function will pad an image upto a square of a give size
 def pad_to_square(x, size):
         h, w = x.shape[-2:]

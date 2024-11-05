@@ -181,9 +181,8 @@ class SKMTEASegDataset(Dataset):
         # Back to numpy
         resized_image = resized_tensor.squeeze(0).squeeze(0).numpy()
 
-        # crop image (unsure on mask yet)
+        # crop image
         image = crop_im(resized_image)
-        #mask = crop_im(mask)
 
         # turn to torch, add channel dimension, and return
         image = torch.from_numpy(image).float().unsqueeze(0)
