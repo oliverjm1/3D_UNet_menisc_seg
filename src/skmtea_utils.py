@@ -8,6 +8,9 @@ and pathology info.
 import numpy as np
 import pandas as pd
 import torch
+import os
+import h5py
+from typing import Tuple
 from torch.nn import functional as F
 from src.utils import crop_im, undo_crop, clip_and_norm
 
@@ -78,3 +81,40 @@ def echo_combination(echo1: np.ndarray, echo2: np.ndarray):
     combined_image = clip_and_norm(rss, 0.6)
 
     return combined_image
+
+def get_skmtea_im_and_seg(file_path: str, data_dir: str, only_menisci = True) -> Tuple[np.ndarray, np.ndarray]:
+    """Function to return image and segmentation masks of a given skm-tea image.
+
+    Args:
+        file_path (str): image file name
+        data_dir (str): path to folder the image is in
+        only_menisci (bool, optional): Return just menisci or all structure masks.
+            Defaults to True.
+
+    Returns:
+        tuple of np.ndarray: Combined echo image and segmentation masks,
+            either of just menisci or of all cartilage.
+    """
+    full_path = os.path.join(data_dir, file_path)
+
+    # get full paths and read in
+    # Open the HDF5 file in read mode
+    with h5py.File(full_path, 'r') as hf:
+        # Load Echo 1 and Echo 2 data
+        echo1 = hf['echo1'][:].astype(np.float64)
+        echo2 = hf['echo2'][:].astype(np.float64)
+
+        # Load segmentation data (One-hot encoded, 6 classes)
+        seg = hf['seg'][:]
+
+    image = echo_combination(echo1, echo2)
+
+    if only_menisci:
+        # menisci
+        med_mask = seg[...,4]
+        lat_mask = seg[...,5]
+
+        # combine
+        seg = np.add(med_mask, lat_mask)
+
+    return (image, seg)
