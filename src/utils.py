@@ -24,6 +24,14 @@ def clip_and_norm(image, upper_bound=None):
 
     return norm
 
+# Function to perform z-score normalisation on an image
+def z_score_norm(image: np.ndarray) -> np.ndarray:
+    mean = np.mean(image)
+    std = np.std(image)
+    norm = (image - mean) / std
+
+    return norm
+
 # This function will crop the MRI images to a pre-chosen size.
 # May alter to allow range as an argument.
 def crop_im(image):
