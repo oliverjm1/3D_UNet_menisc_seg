@@ -7,6 +7,8 @@ and pathology info.
 
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
 import torch
 import os
 import h5py
@@ -118,3 +120,55 @@ def get_skmtea_im_and_seg(file_path: str, data_dir: str, only_menisci = True) ->
         seg = np.add(med_mask, lat_mask)
 
     return (image, seg)
+
+def plot_with_bbox(image, bbox, slice_idx, leeway=20, savefig=False, savepath=None):
+    """
+    Plots an MRI slice with a bounding box and a zoomed-in view of the region around the box.
+    
+    Parameters:
+    - image: 3D numpy array representing the MRI volume (height, width, slices).
+    - bbox: Tuple (y_min, x_min, z_min, width, height, depth) defining the bounding box.
+    - slice_idx: Integer index for the slice to be visualized.
+    - leeway: Additional padding around the bounding box for the zoomed-in region.
+    """
+    # Extract bounding box info in x and y directions
+    y_min, x_min, _, height, width, _ = bbox
+    
+    # Original MRI slice with bounding box
+    plt.figure(figsize=(12, 6))
+    
+    # Full-size plot
+    plt.subplot(1, 2, 1)
+    plt.imshow(image[:, :, slice_idx], cmap='gray')
+    plt.title("MRI with Overlaid Bounding Box")
+    rect = patches.Rectangle((x_min, y_min), width, height, linewidth=1, edgecolor='red', facecolor='none')
+    plt.gca().add_patch(rect)
+    plt.axis('off')
+    
+    # Define the zoomed-in region
+    x_min_zoom = max(0, int(x_min - leeway))
+    y_min_zoom = max(0, int(y_min - leeway))
+    x_max_zoom = min(image.shape[1], int(x_min + width + leeway))
+    y_max_zoom = min(image.shape[0], int(y_min + height + leeway))
+    
+    # Extract the zoomed-in region
+    zoomed_roi = image[y_min_zoom:y_max_zoom, x_min_zoom:x_max_zoom, slice_idx]
+    
+    # Zoomed-in plot
+    plt.subplot(1, 2, 2)
+    plt.imshow(zoomed_roi, cmap='gray')
+    plt.title("Zoomed-in ROI Around Bounding Box")
+    plt.axis('off')
+    
+    # Add the bounding box to the zoomed-in plot
+    zoomed_rect = patches.Rectangle((leeway, leeway), width, height,
+                                    linewidth=2, edgecolor='red', facecolor='none')
+    plt.gca().add_patch(zoomed_rect)
+    
+    plt.tight_layout()
+
+    # make sure savefig is True AND savepath is provided
+    if savefig and savepath is not None:
+        plt.savefig(savepath)
+    
+    plt.show()
