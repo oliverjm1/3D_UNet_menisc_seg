@@ -21,6 +21,9 @@ models/*
 # ingore cloud files
 *.icloud
 
+# ignore notebook-generated picture files
+notebooks/**/*.png
+
 # notebook checkpoints
 notebooks/.ipynb_checkpoints
 
