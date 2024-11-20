@@ -71,7 +71,7 @@ def output_to_skmtea_pad_resize(mask, as_numpy = False):
 
     return resized_image
 
-def rss(image1: np.ndarray, image2: np.ndarray) -> np.ndarray:
+def RSS(image1: np.ndarray, image2: np.ndarray) -> np.ndarray:
     """Function to combine two images using the root sum of squares method.
 
     Args:
@@ -105,6 +105,27 @@ def echo_combination(echo1: np.ndarray, echo2: np.ndarray):
     combined_image = clip_and_norm(rss, 0.6)
 
     return combined_image
+
+def get_skmtea_both_echos(file_path: str, data_dir: str) -> Tuple[np.ndarray, np.ndarray]:
+    """Function to return both echo images of a given skm-tea image.
+
+    Args:
+        file_path (str): image file name
+        data_dir (str): path to folder the image is in
+
+    Returns:
+        tuple of np.ndarray: Echo 1 and Echo 2 images
+    """
+    full_path = os.path.join(data_dir, file_path)
+
+    # get full paths and read in
+    # Open the HDF5 file in read mode
+    with h5py.File(full_path, 'r') as hf:
+        # Load Echo 1 and Echo 2 data
+        echo1 = hf['echo1'][:].astype(np.float64)
+        echo2 = hf['echo2'][:].astype(np.float64)
+
+    return (echo1, echo2)
 
 def get_skmtea_im_and_seg(file_path: str, data_dir: str, only_menisci = True) -> Tuple[np.ndarray, np.ndarray]:
     """Function to return image and segmentation masks of a given skm-tea image.
