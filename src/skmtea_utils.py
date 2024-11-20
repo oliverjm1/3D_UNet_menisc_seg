@@ -71,6 +71,21 @@ def output_to_skmtea_pad_resize(mask, as_numpy = False):
 
     return resized_image
 
+def rss(image1: np.ndarray, image2: np.ndarray) -> np.ndarray:
+    """Function to combine two images using the root sum of squares method.
+
+    Args:
+        image1 (np.ndarray): first image
+        image2 (np.ndarray): second image
+
+    Returns:
+        np.ndarray: combined image
+    """
+
+    rss_image = np.sqrt(image1**2 + image2**2)
+
+    return rss_image
+
 def echo_combination(echo1: np.ndarray, echo2: np.ndarray):
     """Function to combine the two echos into a final image.
     I DO NOT YET KNOW BEST WAY OF DOING THIS. CURRENTLY DOING ROOT SUM OF SQUARES.
