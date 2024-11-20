@@ -28,8 +28,15 @@ def skmtea_to_input_resize_crop(image) -> np.ndarray:
     """
 
     # Resize from (512, 512, 160) to (384, 384, 160) using trilinear interpolation
-    image_tensor = torch.tensor(image).unsqueeze(0).unsqueeze(0)  # Shape: (1, 1, 512, 512, 160)
-    resized_tensor = F.interpolate(image_tensor, size=(384, 384, 160), mode='trilinear', align_corners=True)
+    image_tensor = torch.tensor(image, dtype=torch.float32).unsqueeze(0).unsqueeze(0)  # Shape: (1, 1, 512, 512, 160)
+
+    # check if input is binary - will need to use nearest interpolation
+    if len(np.unique(image)) == 2:
+        resized_tensor = F.interpolate(image_tensor, size=(384, 384, 160), mode='nearest')
+        resized_tensor = (resized_tensor > 0.5).int() # Convert back to binary
+    else:
+        resized_tensor = F.interpolate(image_tensor, size=(384, 384, 160), mode='trilinear', align_corners=True)
+
     resized_image = resized_tensor.squeeze(0).squeeze(0).numpy() # Back to numpy
 
     # Crop and return
