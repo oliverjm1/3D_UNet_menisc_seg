@@ -25,5 +25,5 @@ models/*
 notebooks/**/*.png
 
 # notebook checkpoints
-notebooks/.ipynb_checkpoints
+*.ipynb_checkpoints
 
