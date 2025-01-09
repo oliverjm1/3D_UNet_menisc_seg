@@ -164,7 +164,7 @@ def get_skmtea_im_and_seg(file_path: str, data_dir: str, only_menisci = True) ->
 
     return (image, seg)
 
-def plot_with_bbox(image, bbox, slice_idx, leeway=20, savefig=False, savepath=None):
+def plot_with_bbox(image, bbox, slice_idx=None, leeway=20, direction='sagittal', savefig=False, savepath=None):
     """
     Plots an MRI slice with a bounding box and a zoomed-in view of the region around the box.
     
@@ -174,15 +174,33 @@ def plot_with_bbox(image, bbox, slice_idx, leeway=20, savefig=False, savepath=No
     - slice_idx: Integer index for the slice to be visualized.
     - leeway: Additional padding around the bounding box for the zoomed-in region.
     """
-    # Extract bounding box info in x and y directions
-    y_min, x_min, _, height, width, _ = bbox
     
     # Original MRI slice with bounding box
     plt.figure(figsize=(12, 6))
+
+    # Use direction to reorder image dims and bbox
+    if direction == 'sagittal':
+        y_min, x_min, z_min, height, width, depth = bbox
+        aspect = 1
+    elif direction == 'coronal':
+        image = np.transpose(image, (0, 2, 1))
+        y_min, z_min, x_min, height, depth, width = bbox
+        aspect = 0.3/0.8
+    elif direction == 'axial':
+        image = np.transpose(image, (1, 2, 0))
+        z_min, y_min, x_min, depth, height, width = bbox
+        aspect = 0.3/0.8
+    else:
+        raise ValueError("Invalid direction. Choose from 'sagittal', 'coronal', 'axial'.")
     
-    # Full-size plot
+    # reorder bounding box
+    
+    if slice_idx is None:
+        slice_idx = int(z_min + depth // 2)
+
+    # Full-size plot taking into account voxel dimensions
     plt.subplot(1, 2, 1)
-    plt.imshow(image[:, :, slice_idx], cmap='gray')
+    plt.imshow(image[:, :, slice_idx], cmap='gray', aspect=aspect)
     plt.title("MRI with Overlaid Bounding Box")
     rect = patches.Rectangle((x_min, y_min), width, height, linewidth=1, edgecolor='red', facecolor='none')
     plt.gca().add_patch(rect)
@@ -199,7 +217,7 @@ def plot_with_bbox(image, bbox, slice_idx, leeway=20, savefig=False, savepath=No
     
     # Zoomed-in plot
     plt.subplot(1, 2, 2)
-    plt.imshow(zoomed_roi, cmap='gray')
+    plt.imshow(zoomed_roi, cmap='gray', aspect=aspect)
     plt.title("Zoomed-in ROI Around Bounding Box")
     plt.axis('off')
     

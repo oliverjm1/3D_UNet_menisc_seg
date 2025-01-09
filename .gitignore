@@ -25,6 +25,9 @@ models/*
 notebooks/**/*.png
 
 # notebook checkpoints
+<<<<<<< HEAD
 
+=======
+>>>>>>> 43e1bc7a5824d45f3dfc9e4a1e67b2c7d9dec5a2
 *.ipynb_checkpoints
 
