@@ -97,9 +97,9 @@ def echo_combination(echo1: np.ndarray, echo2: np.ndarray):
     """
 
     # Compute the RSS of the two rescaled echos
-    rss = np.sqrt(echo1**2 + echo2**2)
+    combined_image = RSS(echo1, echo2)
 
-    return rss
+    return combined_image
 
 def get_skmtea_both_echos(file_path: str, data_dir: str) -> Tuple[np.ndarray, np.ndarray]:
     """Function to return both echo images of a given skm-tea image.
