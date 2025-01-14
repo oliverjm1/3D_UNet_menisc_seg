@@ -12,15 +12,15 @@ from segment_anything.utils.transforms import ResizeLongestSide
 # Function to take MRI image, clip the pixel values to specified upper
 # bound, and normalise between zero and this bound.
 # If upper bound not provided, simply rescale
-def clip_and_norm(image, upper_bound=None):
+def clip_and_norm(image, lower_bound=0, upper_bound=None):
     # Clip intensity values
     if upper_bound==None:
         upper_bound=np.max(image)
     
-    image = np.clip(image, 0, upper_bound)
+    image = np.clip(image, lower_bound, upper_bound)
 
     # Normalize the image to the range [0, 1]
-    norm = (image - 0) / (upper_bound - 0)
+    norm = (image - lower_bound) / (upper_bound - lower_bound)
 
     return norm
 
