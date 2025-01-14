@@ -88,23 +88,18 @@ def RSS(image1: np.ndarray, image2: np.ndarray) -> np.ndarray:
 
 def echo_combination(echo1: np.ndarray, echo2: np.ndarray):
     """Function to combine the two echos into a final image.
-    I DO NOT YET KNOW BEST WAY OF DOING THIS. CURRENTLY DOING ROOT SUM OF SQUARES.
+    Combines the raw echos using root sum of squares.
+    Same method as those who created the dataset.
+    Mentioned in the paper: https://doi.org/10.1002/jmri.28365
 
     Returns:
         np.ndarray: combination of the two echos
     """
 
-    # Normalise echos to between 0 and 1
-    norm_echo1 = clip_and_norm(echo1)
-    norm_echo2 = clip_and_norm(echo2)
-
     # Compute the RSS of the two rescaled echos
-    rss = np.sqrt(norm_echo1**2 + norm_echo2**2)
+    rss = np.sqrt(echo1**2 + echo2**2)
 
-    # clip and rescale rss image based on looking at histogram of signal
-    combined_image = clip_and_norm(rss, 0.6)
-
-    return combined_image
+    return rss
 
 def get_skmtea_both_echos(file_path: str, data_dir: str) -> Tuple[np.ndarray, np.ndarray]:
     """Function to return both echo images of a given skm-tea image.
