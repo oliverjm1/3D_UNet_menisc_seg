@@ -228,3 +228,32 @@ def plot_with_bbox(image, bbox, slice_idx=None, leeway=20, direction='sagittal',
         plt.savefig(savepath)
     
     plt.show()
+
+def skmtea_crop_im(image):
+    """
+    Crop an image of any size while maintaining the relative crop ratio
+    originally applied to a (384, 384, 160) image.
+
+    Args:
+        image (numpy.ndarray): Input image of shape (H, W, D).
+    
+    Returns:
+        numpy.ndarray: Cropped image.
+    """
+    # Get the input dimensions
+    height, width, _ = image.shape
+
+    # Define the relative bounds for cropping (based on 384x384 dimensions)
+    dim1_lower_ratio, dim1_upper_ratio = 120 / 384, 320 / 384
+    dim2_lower_ratio, dim2_upper_ratio = 70 / 384, 326 / 384
+
+    # Compute new crop bounds based on input dimensions
+    dim1_lower = int(dim1_lower_ratio * height)
+    dim1_upper = int(dim1_upper_ratio * height)
+    dim2_lower = int(dim2_lower_ratio * width)
+    dim2_upper = int(dim2_upper_ratio * width)
+
+    # Apply cropping
+    cropped = image[dim1_lower:dim1_upper, dim2_lower:dim2_upper, :]
+
+    return cropped
