@@ -141,11 +141,11 @@ def get_skmtea_im_and_seg(file_path: str, data_dir: str, only_menisci = True) ->
     # Open the HDF5 file in read mode
     with h5py.File(full_path, 'r') as hf:
         # Load Echo 1 and Echo 2 data
-        echo1 = hf['echo1'][:].astype(np.float64)
-        echo2 = hf['echo2'][:].astype(np.float64)
+        echo1 = hf['echo1'][:].astype(np.float32)
+        echo2 = hf['echo2'][:].astype(np.float32)
 
         # Load segmentation data (One-hot encoded, 6 classes)
-        seg = hf['seg'][:]
+        seg = hf['seg'][:].astype(np.uint8)
 
     image = echo_combination(echo1, echo2)
 
