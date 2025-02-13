@@ -23,6 +23,9 @@ models/*
 
 # ignore notebook-generated picture files
 notebooks/**/*.png
+notebooks/**/*.eps
+notebooks/**/*.svg
+notebooks/**/*.pdf
 
 # notebook checkpoints
 <<<<<<< HEAD
