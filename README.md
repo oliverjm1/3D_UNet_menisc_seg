@@ -12,7 +12,7 @@ Other notebooks are for extracting results from the generated masks (`Bland_Altm
 
 `data` folder is empty. Put data here after cloning.
 
-Directory Tree:
+Directory Tree (OUT OF DATE):
 ```bash
 .
 ├── LICENSE
